@@ -59,6 +59,20 @@ async def set_username(client, message):
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
 
+@Client.on_message(filters.command("setmedia") & filters.private)
+async def set_media_type(client, message: Message):
+    try:
+        media_type = message.text.split(" ", 1)[1].strip().lower()
+        if media_type not in ["video", "document", "audio"]:
+            return await message.reply("❗ Invalid media type. Use video/document/audio")
+        
+        await db.set_media_preference(message.from_user.id, media_type)
+        await message.reply(f"✅ Media preference set to: {media_type}")
+    except IndexError:
+        await message.reply("❗ Please provide media type after the command")
+    except Exception as e:
+        await message.reply(f"❌ Error: {str(e)}")
+        
 # Handler for /process command
 @Client.on_message(filters.private & filters.command("process"))
 async def start_processing(client, message: Message):
@@ -90,22 +104,22 @@ async def start_processing(client, message: Message):
                 if msg and (msg.document or msg.video or msg.audio):
                     # Filename Processing
                     # original_name = msg.document.file_name if msg.document else msg.video.file_name
-                    caption = msg.caption
-                    original_name = caption.strip().split("\n")[0]
-                    cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
-                    base_name = f"[{username}] - {cleaned_name}"
-                    base_name = os.path.splitext(base_name)[0]  # Remove existing extension
-                    final_name = template.replace("{file_name}", base_name) + ".mkv"
+                    # caption = msg.caption
+                    # original_name = caption.strip().split("\n")[0]
+                    # cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
+                    # base_name = f"[{username}] - {cleaned_name}"
+                    # base_name = os.path.splitext(base_name)[0]  # Remove existing extension
+                    # final_name = template.replace("{file_name}", base_name) + ".mkv"
                     
-                    # Download Process
-                    start_time = time.time()
-                    progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
-                    file_path = await client.download_media(
-                        msg,
-                        file_name=final_name,
-                        progress=progress_for_pyrogram,
-                        progress_args=(original_name, progress_msg, start_time)
-                    )
+                    # # Download Process
+                    # start_time = time.time()
+                    # progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
+                    # file_path = await client.download_media(
+                    #     msg,
+                    #     file_name=final_name,
+                    #     progress=progress_for_pyrogram,
+                    #     progress_args=(original_name, progress_msg, start_time)
+                    # )
 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
@@ -118,31 +132,40 @@ async def start_processing(client, message: Message):
                     #     progress_args=(final_name, progress_msg, start_time)
                     # )
 
-                    # Send the file based on media preference
+                    # File processing
+                    file_name = msg.document.file_name if msg.document else msg.video.file_name
+                    cleaned_name = re.sub(r'^@\w+\s*', '', file_name)
+                    base_name = f"[{username}] - {cleaned_name.rsplit('.', 1)[0]}"
+                    final_name = template.replace("{file_name}", base_name) + ".mkv"
+                    
+                    # Download with progress
+                    start_time = time.time()
+                    progress_msg = await message.reply(f"📥 Downloading: {file_name}")
+                    file_path = await client.download_media(
+                        msg,
+                        file_name=final_name,
+                        progress=progress_for_pyrogram,
+                        progress_args=(file_name, progress_msg, start_time)
+                    )
+                    
+                    # Upload with progress
+                    start_time = time.time()
+                    await progress_msg.edit("📤 Uploading...")
                     if media_type == "video":
                         await client.send_video(
-                            Config.LOG_DATABASE,
+                            Config.LOG_CHANNEL,
                             video=file_path,
                             file_name=final_name,
-                            caption=f"{final_name}",
+                            caption=f"📁 {final_name}",
                             progress=progress_for_pyrogram,
                             progress_args=(final_name, progress_msg, start_time)
                         )
                     elif media_type == "document":
                         await client.send_document(
-                            Config.LOG_DATABASE,
+                            Config.LOG_CHANNEL,
                             document=file_path,
                             file_name=final_name,
-                            caption=f"{final_name}",
-                            progress=progress_for_pyrogram,
-                            progress_args=(final_name, progress_msg, start_time)
-                        )
-                    elif media_type == "audio":
-                        await client.send_audio(
-                            Config.LOG_DATABASE,
-                            audio=file_path,
-                            file_name=final_name,
-                            caption=f"{final_name}",
+                            caption=f"📁 {final_name}",
                             progress=progress_for_pyrogram,
                             progress_args=(final_name, progress_msg, start_time)
                         )
