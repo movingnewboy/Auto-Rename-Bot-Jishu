@@ -20,14 +20,22 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         progress = "{0}{1}".format(
             ''.join(["⬢" for i in range(math.floor(percentage / 5))]),
             ''.join(["⬡" for i in range(20 - math.floor(percentage / 5))])
-        )            
-        tmp = progress + Txt.PROGRESS_BAR.format( 
+        )      
+        tmp = f"**{ud_type}**\n\n**Download Started....**\n\n"  # Modified line
+        tmp += progress + Txt.PROGRESS_BAR.format(              # Modified line
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),
             humanbytes(speed),            
             estimated_total_time if estimated_total_time != '' else "0 s"
         )
+        # tmp = progress + Txt.PROGRESS_BAR.format( 
+        #     round(percentage, 2),
+        #     humanbytes(current),
+        #     humanbytes(total),
+        #     humanbytes(speed),            
+        #     estimated_total_time if estimated_total_time != '' else "0 s"
+        # )
         try:
             await message.edit(
                 text=f"{ud_type}\n\n{tmp}",               
