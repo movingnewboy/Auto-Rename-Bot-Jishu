@@ -114,7 +114,7 @@ async def start_processing(client, message: Message):
                     file_path = await client.download_media(
                         msg,
                         progress=progress_for_pyrogram,
-                        progress_args=(progress_msg, start_time, original_name)
+                        progress_args=(original_name, progress_msg, start_time)
                     )
 
                     # Upload Process
@@ -125,7 +125,7 @@ async def start_processing(client, message: Message):
                         file_name=final_name,
                         caption=f"Renamed from: {original_name}",
                         progress=progress_for_pyrogram,
-                        progress_args=(progress_msg, start_time, final_name)
+                        progress_args=(final_name, progress_msg, start_time)
                     )
                 
                     await progress_msg.delete()
@@ -209,7 +209,7 @@ async def auto_rename_files(client, message):
         
         download_msg = await message.reply("Downloading file...")
         file_path = await client.download_media(message, progress=progress_for_pyrogram, 
-                                              progress_args=("Downloading...", download_msg, datetime.now()))
+                                              progress_args=("final_name", download_msg, datetime.now()))
         
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
@@ -221,7 +221,7 @@ async def auto_rename_files(client, message):
             message.chat.id,
             document=new_path,
             progress=progress_for_pyrogram,
-            progress_args=("Uploading...", upload_msg, datetime.now())
+            progress_args=("final_name", upload_msg, datetime.now())
         )
         
         # Upload to log channel
