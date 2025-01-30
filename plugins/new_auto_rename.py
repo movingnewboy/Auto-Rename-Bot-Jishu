@@ -124,7 +124,7 @@ async def start_processing(client, message: Message):
                         Config.LOG_DATABASE,
                         document=file_path,
                         file_name=final_name,
-                        caption=f"Renamed from: {original_name}",
+                        caption=f"{final_name}",
                         progress=progress_for_pyrogram,
                         progress_args=(final_name, progress_msg, start_time)
                     )
