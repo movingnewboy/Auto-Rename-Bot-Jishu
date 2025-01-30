@@ -5,7 +5,7 @@ import re
 import os
 import asyncio
 from datetime import datetime
-from helper.database import db
+from helper.database import dbase
 from helper.downloadprogress import progress_for_pyrogram
 from config import Config
 
@@ -53,7 +53,7 @@ async def set_end_id(client, message: Message):
 async def set_username(client, message):
     try:
         username = message.text.split("/set_username", 1)[1].strip()
-        await db.set_custom_username(message.from_user.id, username)
+        await dbase.set_custom_username(message.from_user.id, username)
         await message.reply(f"✅ Custom username set to: {username}")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
@@ -68,8 +68,8 @@ async def start_processing(client, message: Message):
         return await message.reply("❗ Please set both start_id and end_id first")
     
     try:
-        # custom_username = await db.get_custom_username(user_id)
-        # format_template = await db.get_format_template(user_id)
+        # custom_username = await dbase.get_custom_username(user_id)
+        # format_template = await dbase.get_format_template(user_id)
         
         # if not format_template:
         #     return await message.reply("Please set a format template first using /autorename")
@@ -81,8 +81,8 @@ async def start_processing(client, message: Message):
         # start_id = settings["start_id"]
         # end_id = settings["end_id"]
 
-        template = await db.get_format_template(user_id)
-        username = await db.get_custom_username(user_id)
+        template = await dbase.get_format_template(user_id)
+        username = await dbase.get_custom_username(user_id)
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
@@ -186,8 +186,8 @@ async def process_and_forward(client, message, new_name):
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    format_template = await db.get_format_template(user_id)
-    custom_username = await db.get_custom_username(user_id)
+    format_template = await dbase.get_format_template(user_id)
+    custom_username = await dbase.get_custom_username(user_id)
 
     if not format_template or not custom_username:
         return await message.reply("Please set both username and format template first")
@@ -265,7 +265,7 @@ def get_file_name(message):
 #     if "{file_name}" not in format_template:
 #         return await message.reply("Format template must include {file_name} placeholder")
     
-#     await db.set_format_template(user_id, format_template)
+#     await dbase.set_format_template(user_id, format_template)
 #     await message.reply("Format template updated successfully!")
 
 @Client.on_message(filters.command("autorename") & filters.private)
@@ -274,7 +274,7 @@ async def set_template(client, message):
         template = message.text.split("/autorename", 1)[1].strip()
         if "{file_name}" not in template:
             return await message.reply("❗ Template must contain {file_name} placeholder")
-        await db.set_format_template(message.from_user.id, template)
+        await dbase.set_format_template(message.from_user.id, template)
         await message.reply(f"✅ Format template updated:\n`{template}`")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
