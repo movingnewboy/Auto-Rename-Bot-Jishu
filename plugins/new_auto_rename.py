@@ -71,6 +71,7 @@ async def start_processing(client, message: Message):
     try:
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
+        media_type = await madflixbotz.get_media_preference(user_id)
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
@@ -108,14 +109,44 @@ async def start_processing(client, message: Message):
 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
-                    await client.send_video(
-                        Config.LOG_DATABASE,
-                        video=file_path,
-                        file_name=final_name,
-                        caption=f"{final_name}",
-                        progress=progress_for_pyrogram,
-                        progress_args=(final_name, progress_msg, start_time)
-                    )
+                    # await client.send_video(
+                    #     Config.LOG_DATABASE,
+                    #     video=file_path,
+                    #     file_name=final_name,
+                    #     caption=f"{final_name}",
+                    #     progress=progress_for_pyrogram,
+                    #     progress_args=(final_name, progress_msg, start_time)
+                    # )
+
+                    # Send the file based on media preference
+                    if media_type == "video":
+                        await client.send_video(
+                            Config.LOG_DATABASE,
+                            video=file_path,
+                            file_name=final_name,
+                            caption=f"{final_name}",
+                            progress=progress_for_pyrogram,
+                            progress_args=(final_name, progress_msg, start_time)
+                        )
+                    elif media_type == "document":
+                        await client.send_document(
+                            Config.LOG_DATABASE,
+                            document=file_path,
+                            file_name=final_name,
+                            caption=f"{final_name}",
+                            progress=progress_for_pyrogram,
+                            progress_args=(final_name, progress_msg, start_time)
+                        )
+                    elif media_type == "audio":
+                        await client.send_audio(
+                            Config.LOG_DATABASE,
+                            audio=file_path,
+                            file_name=final_name,
+                            caption=f"{final_name}",
+                            progress=progress_for_pyrogram,
+                            progress_args=(final_name, progress_msg, start_time)
+                        )
+        
                     print(f"{final_name} Downloading Completed✅")
                 
                     await progress_msg.delete()
