@@ -122,7 +122,7 @@ async def process_and_forward(client, message, new_name):
         await client.send_document(
             Config.LOG_DATABASE,
             document=new_path,
-            caption=f"Renamed File: {new_name}\nOriginal Caption: {message.caption}"
+            caption=f"{new_name}"
         )
         
         os.remove(new_path)
