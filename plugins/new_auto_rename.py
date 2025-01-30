@@ -101,6 +101,7 @@ async def start_processing(client, message: Message):
                     progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
                     file_path = await client.download_media(
                         msg,
+                        file_name=final_name,
                         progress=progress_for_pyrogram,
                         progress_args=(original_name, progress_msg, start_time)
                     )
@@ -109,7 +110,7 @@ async def start_processing(client, message: Message):
                     await progress_msg.edit("📤 Uploading to channel...")
                     await client.send_video(
                         Config.LOG_DATABASE,
-                        document=file_path,
+                        video=file_path,
                         file_name=final_name,
                         caption=f"{final_name}",
                         progress=progress_for_pyrogram,
