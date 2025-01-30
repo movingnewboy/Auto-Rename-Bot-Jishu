@@ -109,7 +109,7 @@ async def start_processing(client, message: Message):
                     final_name = template.replace("{file_name}", base_name) + ".mkv"
                     
                     # Download Process
-                    start_time = datetime.now()
+                    start_time = time.time()
                     progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
                     file_path = await client.download_media(
                         msg,
@@ -209,7 +209,7 @@ async def auto_rename_files(client, message):
         
         download_msg = await message.reply("Downloading file...")
         file_path = await client.download_media(message, progress=progress_for_pyrogram, 
-                                              progress_args=("final_name", download_msg, datetime.now()))
+                                              progress_args=("final_name", download_msg, time.time()))
         
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
@@ -221,7 +221,7 @@ async def auto_rename_files(client, message):
             message.chat.id,
             document=new_path,
             progress=progress_for_pyrogram,
-            progress_args=("final_name", upload_msg, datetime.now())
+            progress_args=("final_name", upload_msg, time.time())
         )
         
         # Upload to log channel
