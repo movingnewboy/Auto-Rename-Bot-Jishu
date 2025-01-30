@@ -5,7 +5,8 @@ import re
 import os
 import asyncio
 from datetime import datetime
-from helper.database import madflixbotz
+from helper.database import db
+from helper.downloadprogress import progress
 from config import Config
 
 # Dictionary to store user's processing settings
@@ -48,15 +49,14 @@ async def set_end_id(client, message: Message):
         await message.reply(f"Error setting end ID: {str(e)}")
 
 # Handler for /set_username command
-@Client.on_message(filters.private & filters.command("set_username"))
-async def set_custom_username(client, message: Message):
+@app.on_message(filters.command("set_username") & filters.private)
+async def set_username(client, message):
     try:
         username = message.text.split("/set_username", 1)[1].strip()
-        user_id = message.from_user.id
-        await madflixbotz.set_custom_username(user_id, username)
-        await message.reply(f"Custom username set to: {username}")
+        await db.set_custom_username(message.from_user.id, username)
+        await message.reply(f"✅ Custom username set to: {username}")
     except Exception as e:
-        await message.reply(f"Error setting username: {str(e)}")
+        await message.reply(f"❌ Error: {str(e)}")
 
 # Handler for /process command
 @Client.on_message(filters.private & filters.command("process"))
@@ -65,34 +65,82 @@ async def start_processing(client, message: Message):
     settings = user_settings.get(user_id, {})
     
     if not settings.get("start_id") or not settings.get("end_id"):
-        return await message.reply("Please set both start and end IDs first")
+        return await message.reply("❗ Please set both start_id and end_id first")
     
     try:
-        custom_username = await madflixbotz.get_custom_username(user_id)
-        format_template = await madflixbotz.get_format_template(user_id)
+        # custom_username = await db.get_custom_username(user_id)
+        # format_template = await db.get_format_template(user_id)
         
-        if not format_template:
-            return await message.reply("Please set a format template first using /autorename")
+        # if not format_template:
+        #     return await message.reply("Please set a format template first using /autorename")
         
-        if not custom_username:
-            return await message.reply("Please set a custom username first using /set_username")
+        # if not custom_username:
+        #     return await message.reply("Please set a custom username first using /set_username")
 
-        processing_msg = await message.reply("Starting processing...")
+        # processing_msg = await message.reply("Starting processing...")
+        # start_id = settings["start_id"]
+        # end_id = settings["end_id"]
+
+        template = await db.get_format_template(user_id)
+        username = await db.get_custom_username(user_id)
+        
+        if not template or not username:
+            return await message.reply("❗ Please set both username and template first")
+        
+        processing_msg = await message.reply("⏳ Starting processing...")
         start_id = settings["start_id"]
         end_id = settings["end_id"]
         
         for msg_id in range(start_id, end_id + 1):
             try:
                 msg = await client.get_messages(Config.CHANNEL_ID, msg_id)
-                
-                if msg and (msg.document or msg.video or msg.audio):
-                    file_name = get_file_name(msg)
-                    cleaned_name = re.sub(r'^@\w+\s*', '', file_name)
-                    formatted_name = f"[{custom_username}] - {cleaned_name}"
-                    final_name = format_template.replace("{file_name}", formatted_name)
+
+                if not msg or not (msg.document or msg.video):
+                    continue
                     
-                    await process_and_forward(client, msg, final_name)
-                    await processing_msg.edit(f"Processed message ID: {msg_id}")
+                if msg and (msg.document or msg.video or msg.audio):
+                    # Filename Processing
+                    # original_name = msg.document.file_name if msg.document else msg.video.file_name
+                    caption = msg.caption
+                    original_name = caption.strip().split("\n")[0]
+                    cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
+                    base_name = f"[{username}] - {cleaned_name}"
+                    base_name = os.path.splitext(base_name)[0]  # Remove existing extension
+                    final_name = template.replace("{file_name}", base_name) + ".mkv"
+                    
+                    # Download Process
+                    start_time = time.time()
+                    progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
+                    file_path = await client.download_media(
+                        msg,
+                        progress=progress_for_pyrogram,
+                        progress_args=(progress_msg, start_time, original_name)
+                    )
+
+                    # Upload Process
+                    await progress_msg.edit("📤 Uploading to channel...")
+                    await client.send_document(
+                        Config.LOG_DATABASE,
+                        document=file_path,
+                        file_name=final_name,
+                        caption=f"Renamed from: {original_name}",
+                        progress=progress_for_pyrogram,
+                        progress_args=(progress_msg, start_time, final_name)
+                    )
+                
+                    await progress_msg.delete()
+                    os.remove(file_path)
+                    await processing_msg.edit(f"✅ Processed ID: {msg_id}")
+                
+                    # file_name = get_file_name(msg)
+                    # caption = msg.caption
+                    # file_name = caption.strip().split("\n")[0]
+                    # cleaned_name = re.sub(r'^@\w+\s*', '', file_name)
+                    # formatted_name = f"[{custom_username}] - {cleaned_name}"
+                    # final_name = format_template.replace("{file_name}", formatted_name)
+                    
+                    # await process_and_forward(client, msg, final_name)
+                    # await processing_msg.edit(f"Processed message ID: {msg_id}")
             
             except FloodWait as e:
                 await asyncio.sleep(e.value)
@@ -100,7 +148,8 @@ async def start_processing(client, message: Message):
                 print(f"Error processing message {msg_id}: {str(e)}")
                 continue
         
-        await processing_msg.edit("Processing completed!")
+        await processing_msg.edit("🎉 Processing Completed!")
+        del user_settings[user_id]
         
     except Exception as e:
         await message.reply(f"Error during processing: {str(e)}")
@@ -137,8 +186,8 @@ async def process_and_forward(client, message, new_name):
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 async def auto_rename_files(client, message):
     user_id = message.from_user.id
-    format_template = await madflixbotz.get_format_template(user_id)
-    custom_username = await madflixbotz.get_custom_username(user_id)
+    format_template = await db.get_format_template(user_id)
+    custom_username = await db.get_custom_username(user_id)
 
     if not format_template or not custom_username:
         return await message.reply("Please set both username and format template first")
@@ -208,13 +257,24 @@ def progress_for_pyrogram(current, total, message, start):
     pass
 
 # Command handlers (keep your existing /autorename implementation)
-@Client.on_message(filters.private & filters.command("autorename"))
-async def auto_rename_command(client, message):
-    user_id = message.from_user.id
-    format_template = message.text.split("/autorename", 1)[1].strip()
+# @Client.on_message(filters.private & filters.command("autorename"))
+# async def auto_rename_command(client, message):
+#     user_id = message.from_user.id
+#     format_template = message.text.split("/autorename", 1)[1].strip()
     
-    if "{file_name}" not in format_template:
-        return await message.reply("Format template must include {file_name} placeholder")
+#     if "{file_name}" not in format_template:
+#         return await message.reply("Format template must include {file_name} placeholder")
     
-    await madflixbotz.set_format_template(user_id, format_template)
-    await message.reply("Format template updated successfully!")
+#     await db.set_format_template(user_id, format_template)
+#     await message.reply("Format template updated successfully!")
+
+@Client.on_message(filters.command("autorename") & filters.private)
+async def set_template(client, message):
+    try:
+        template = message.text.split("/autorename", 1)[1].strip()
+        if "{file_name}" not in template:
+            return await message.reply("❗ Template must contain {file_name} placeholder")
+        await db.set_format_template(message.from_user.id, template)
+        await message.reply(f"✅ Format template updated:\n`{template}`")
+    except Exception as e:
+        await message.reply(f"❌ Error: {str(e)}")
