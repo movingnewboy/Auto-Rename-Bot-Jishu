@@ -6,7 +6,7 @@ import os
 import asyncio
 from datetime import datetime
 from helper.database import madflixbotz
-from helper.downloadprogress import progress_for_pyrogram
+from helper.utils import progress_for_pyrogram, humanbytes, convert
 from config import Config
 
 # Dictionary to store user's processing settings
