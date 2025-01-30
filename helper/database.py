@@ -14,7 +14,9 @@ class Database:
             _id=int(id),                                   
             file_id=None,
             caption=None,
-            format_template=None  # Add this line for the format template
+            format_template=None,
+            custom_username=None,
+            media_type=None
         )
 
     async def add_user(self, b, m):
@@ -67,7 +69,15 @@ class Database:
         user = await self.col.find_one({'_id': int(id)})
         return user.get('media_type', None)
 
+    async def set_custom_username(self, id, username):
+        await self.col.update_one(
+            {'_id': int(id)}, 
+            {'$set': {'custom_username': username}}
+        )
 
+    async def get_custom_username(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('custom_username', None)
 
 madflixbotz = Database(Config.DB_URL, Config.DB_NAME)
         
