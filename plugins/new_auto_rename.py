@@ -72,6 +72,30 @@ async def set_media_type(client, message: Message):
         await message.reply("❗ Please provide media type after the command")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
+
+@Client.on_message(filters.command("setthumb") & filters.private)
+async def set_thumbnail(client, message: Message):
+    try:
+        if not message.photo:
+            return await message.reply("❗ Please send a photo to set as thumbnail.")
+        
+        # Download the photo
+        thumb_path = f"thumbnails/{message.from_user.id}.jpg"
+        await message.download(file_name=thumb_path)
+        
+        # Save thumbnail path in database
+        await db.set_thumbnail(message.from_user.id, thumb_path)
+        await message.reply("✅ Thumbnail set successfully!")
+    except Exception as e:
+        await message.reply(f"❌ Error: {str(e)}")
+
+@Client.on_message(filters.command("delthumb") & filters.private)
+async def delete_thumbnail(client, message: Message):
+    try:
+        await db.set_thumbnail(message.from_user.id, None)
+        await message.reply("✅ Thumbnail removed successfully!")
+    except Exception as e:
+        await message.reply(f"❌ Error: {str(e)}")
         
 # Handler for /process command
 @Client.on_message(filters.private & filters.command("process"))
@@ -86,6 +110,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         media_type = await madflixbotz.get_media_preference(user_id)
+        thumb_path = await db.get_thumbnail(user_id)
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
@@ -103,72 +128,37 @@ async def start_processing(client, message: Message):
                     
                 if msg and (msg.document or msg.video or msg.audio):
                     # Filename Processing
-                    # original_name = msg.document.file_name if msg.document else msg.video.file_name
-                    # caption = msg.caption
-                    # original_name = caption.strip().split("\n")[0]
-                    # cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
-                    # base_name = f"[{username}] - {cleaned_name}"
-                    # base_name = os.path.splitext(base_name)[0]  # Remove existing extension
-                    # final_name = template.replace("{file_name}", base_name) + ".mkv"
-                    
-                    # # Download Process
-                    # start_time = time.time()
-                    # progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
-                    # file_path = await client.download_media(
-                    #     msg,
-                    #     file_name=final_name,
-                    #     progress=progress_for_pyrogram,
-                    #     progress_args=(original_name, progress_msg, start_time)
-                    # )
-
-                    # Upload Process
-                    # await progress_msg.edit("📤 Uploading to channel...")
-                    # await client.send_video(
-                    #     Config.LOG_DATABASE,
-                    #     video=file_path,
-                    #     file_name=final_name,
-                    #     caption=f"{final_name}",
-                    #     progress=progress_for_pyrogram,
-                    #     progress_args=(final_name, progress_msg, start_time)
-                    # )
-
-                    # File processing
-                    file_name = msg.document.file_name if msg.document else msg.video.file_name
-                    cleaned_name = re.sub(r'^@\w+\s*', '', file_name)
-                    base_name = f"[{username}] - {cleaned_name.rsplit('.', 1)[0]}"
+                    original_name = msg.document.file_name if msg.document else msg.video.file_name
+                    caption = msg.caption
+                    original_name = caption.strip().split("\n")[0]
+                    cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
+                    base_name = f"[{username}] - {cleaned_name}"
+                    base_name = os.path.splitext(base_name)[0]  # Remove existing extension
                     final_name = template.replace("{file_name}", base_name) + ".mkv"
                     
-                    # Download with progress
+                    # Download Process
                     start_time = time.time()
-                    progress_msg = await message.reply(f"📥 Downloading: {file_name}")
+                    progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
                     file_path = await client.download_media(
                         msg,
                         file_name=final_name,
                         progress=progress_for_pyrogram,
-                        progress_args=(file_name, progress_msg, start_time)
+                        progress_args=(original_name, progress_msg, start_time)
                     )
-                    
-                    # Upload with progress
-                    start_time = time.time()
-                    await progress_msg.edit("📤 Uploading...")
-                    if media_type == "video":
-                        await client.send_video(
-                            Config.LOG_CHANNEL,
-                            video=file_path,
-                            file_name=final_name,
-                            caption=f"📁 {final_name}",
-                            progress=progress_for_pyrogram,
-                            progress_args=(final_name, progress_msg, start_time)
-                        )
-                    elif media_type == "document":
-                        await client.send_document(
-                            Config.LOG_CHANNEL,
-                            document=file_path,
-                            file_name=final_name,
-                            caption=f"📁 {final_name}",
-                            progress=progress_for_pyrogram,
-                            progress_args=(final_name, progress_msg, start_time)
-                        )
+
+                    # Use thumbnail if available
+                    thumb = thumb_path if thumb_path and os.path.exists(thumb_path) else None
+                
+                    # Upload Process
+                    await progress_msg.edit("📤 Uploading to channel...")
+                    await client.send_document(
+                        Config.LOG_DATABASE,
+                        document=file_path,
+                        file_name=final_name,
+                        caption=f"{final_name}",
+                        progress=progress_for_pyrogram,
+                        progress_args=(final_name, progress_msg, start_time)
+                    )
         
                     print(f"{final_name} Downloading Completed✅")
                 
@@ -187,34 +177,6 @@ async def start_processing(client, message: Message):
         
     except Exception as e:
         await message.reply(f"Error during processing: {str(e)}")
-
-async def process_and_forward(client, message, new_name):
-    try:
-        file_path = await client.download_media(message)
-        new_path = os.path.join(os.path.dirname(file_path), new_name)
-        os.rename(file_path, new_path)
-        
-        # Send to user
-        # sent_message = await client.send_document(
-        #     chat_id=message.chat.id,
-        #     document=new_path,
-        #     caption=message.caption
-        # )
-        
-        # Send to log channel
-        await client.send_document(
-            Config.LOG_DATABASE,
-            document=new_path,
-            caption=f"{new_name}"
-        )
-        
-        os.remove(new_path)
-        return sent_message
-        
-    except Exception as e:
-        print(f"Error processing file: {str(e)}")
-        if os.path.exists(new_path):
-            os.remove(new_path)
 
 # Modified auto-rename handler
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
