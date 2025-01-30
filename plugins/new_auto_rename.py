@@ -69,19 +69,6 @@ async def start_processing(client, message: Message):
         return await message.reply("❗ Please set both start_id and end_id first")
     
     try:
-        # custom_username = await madflixbotz.get_custom_username(user_id)
-        # format_template = await madflixbotz.get_format_template(user_id)
-        
-        # if not format_template:
-        #     return await message.reply("Please set a format template first using /autorename")
-        
-        # if not custom_username:
-        #     return await message.reply("Please set a custom username first using /set_username")
-
-        # processing_msg = await message.reply("Starting processing...")
-        # start_id = settings["start_id"]
-        # end_id = settings["end_id"]
-
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         
@@ -128,20 +115,11 @@ async def start_processing(client, message: Message):
                         progress=progress_for_pyrogram,
                         progress_args=(final_name, progress_msg, start_time)
                     )
+                    print(f"{final_name} Downloading Completed✅")
                 
                     await progress_msg.delete()
                     os.remove(file_path)
                     await processing_msg.edit(f"✅ Processed ID: {msg_id}")
-                
-                    # file_name = get_file_name(msg)
-                    # caption = msg.caption
-                    # file_name = caption.strip().split("\n")[0]
-                    # cleaned_name = re.sub(r'^@\w+\s*', '', file_name)
-                    # formatted_name = f"[{custom_username}] - {cleaned_name}"
-                    # final_name = format_template.replace("{file_name}", formatted_name)
-                    
-                    # await process_and_forward(client, msg, final_name)
-                    # await processing_msg.edit(f"Processed message ID: {msg_id}")
             
             except FloodWait as e:
                 await asyncio.sleep(e.value)
