@@ -79,17 +79,16 @@ async def set_thumbnail(client, message: Message):
         if not message.photo:
             return await message.reply("❗ Please send a photo to set as thumbnail.")
         
-        # Download the photo
-        thumb_path = f"thumbnails/{message.from_user.id}.jpg"
-        await message.download(file_name=thumb_path)
+        # Get the file_id of the largest photo size
+        file_id = message.photo.file_id
         
-        # Save thumbnail path in database
-        await db.set_thumbnail(message.from_user.id, thumb_path)
+        # Save file_id in database
+        await db.set_thumbnail(message.from_user.id, file_id)
         await message.reply("✅ Thumbnail set successfully!")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
 
-@Client.on_message(filters.command("delthumb") & filters.private)
+@app.on_message(filters.command("delthumb") & filters.private)
 async def delete_thumbnail(client, message: Message):
     try:
         await db.set_thumbnail(message.from_user.id, None)
@@ -110,7 +109,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         media_type = await madflixbotz.get_media_preference(user_id)
-        thumb_path = await db.get_thumbnail(user_id)
+        thumb_file_id = await db.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
@@ -147,7 +146,7 @@ async def start_processing(client, message: Message):
                     )
 
                     # Use thumbnail if available
-                    thumb = thumb_path if thumb_path and os.path.exists(thumb_path) else None
+                    thumb = thumb_file_id if thumb_file_id else None
                 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
@@ -156,6 +155,7 @@ async def start_processing(client, message: Message):
                         document=file_path,
                         file_name=final_name,
                         caption=f"{final_name}",
+                        thumb=thumb,
                         progress=progress_for_pyrogram,
                         progress_args=(final_name, progress_msg, start_time)
                     )
