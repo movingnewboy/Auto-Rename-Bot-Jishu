@@ -2,7 +2,7 @@ import time
 from math import floor
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-def progress_for_pyrogram(current, total, message, start, file_name):
+async def progress_for_pyrogram(current, total, message, start, file_name):
     now = time.time()
     diff = now - start
     percentage = current * 100 / total
