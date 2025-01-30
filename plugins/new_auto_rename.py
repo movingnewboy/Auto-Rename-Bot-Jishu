@@ -6,7 +6,7 @@ import os
 import asyncio
 from datetime import datetime
 from helper.database import db
-from helper.downloadprogress import progress
+from helper.downloadprogress import progress_for_pyrogram
 from config import Config
 
 # Dictionary to store user's processing settings
@@ -252,9 +252,9 @@ def get_file_name(message):
     return ""
 
 # Progress callback (keep your existing implementation)
-def progress_for_pyrogram(current, total, message, start):
-    # Your existing progress implementation
-    pass
+# def progress_for_pyrogram(current, total, message, start):
+#     # Your existing progress implementation
+#     pass
 
 # Command handlers (keep your existing /autorename implementation)
 # @Client.on_message(filters.private & filters.command("autorename"))
