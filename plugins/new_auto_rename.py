@@ -49,7 +49,7 @@ async def set_end_id(client, message: Message):
         await message.reply(f"Error setting end ID: {str(e)}")
 
 # Handler for /set_username command
-@app.on_message(filters.command("set_username") & filters.private)
+@Client.on_message(filters.command("set_username") & filters.private)
 async def set_username(client, message):
     try:
         username = message.text.split("/set_username", 1)[1].strip()
