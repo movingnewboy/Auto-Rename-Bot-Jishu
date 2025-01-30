@@ -122,7 +122,7 @@ async def start_processing(client, message: Message):
                     # )
 
                     # Upload Process
-                    await progress_msg.edit("📤 Uploading to channel...")
+                    # await progress_msg.edit("📤 Uploading to channel...")
                     # await client.send_video(
                     #     Config.LOG_DATABASE,
                     #     video=file_path,
