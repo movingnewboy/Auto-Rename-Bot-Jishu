@@ -161,11 +161,11 @@ async def process_and_forward(client, message, new_name):
         os.rename(file_path, new_path)
         
         # Send to user
-        sent_message = await client.send_document(
-            chat_id=message.chat.id,
-            document=new_path,
-            caption=message.caption
-        )
+        # sent_message = await client.send_document(
+        #     chat_id=message.chat.id,
+        #     document=new_path,
+        #     caption=message.caption
+        # )
         
         # Send to log channel
         await client.send_document(
