@@ -4,7 +4,7 @@ from pytz import timezone
 from config import Config, Txt 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-async def progress_for_pyrogram(current, total, ud_type, message, start):
+async def progress_for_pyrogram(current, total, file_name, message, start):
     start_time = float(start) if isinstance(start, str) else start
     now = time.time()
     diff = now - start
@@ -22,7 +22,7 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
             ''.join(["⬢" for i in range(math.floor(percentage / 5))]),
             ''.join(["⬡" for i in range(20 - math.floor(percentage / 5))])
         )      
-        tmp = f"**{ud_type}**\n\n**Download Started....**\n\n"  # Modified line
+        tmp = f"**{file_name}**\n\n**Download Started....**\n\n"  # Modified line
         tmp += progress + Txt.PROGRESS_BAR.format(              # Modified line
             round(percentage, 2),
             humanbytes(current),
