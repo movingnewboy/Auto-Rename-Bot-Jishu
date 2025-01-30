@@ -200,7 +200,7 @@ async def auto_rename_files(client, message):
         if file_id in renaming_operations:
             return
 
-        renaming_operations[file_id] = datetime.now()
+        renaming_operations[file_id] = time.time()
         
         original_name = get_file_name(message)
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
