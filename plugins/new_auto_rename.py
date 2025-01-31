@@ -214,7 +214,7 @@ async def start_processing(client, message: Message):
                                 caption=f"{final_name}",
                                 thumb=ph_path,
                                 progress=progress_for_pyrogram,
-                                progress_args=(final_name, upload_msg, time.time())
+                                progress_args=(final_name, progress_msg, time.time())
                             )
                             await client.send_document(
                                 Config.LOG_DATABASE,
@@ -230,7 +230,7 @@ async def start_processing(client, message: Message):
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
-                                progress_args=(final_name, upload_msg, time.time())
+                                progress_args=(final_name, progress_msg, time.time())
                             )
                             await client.send_video(
                                 Config.LOG_DATABASE,
@@ -245,7 +245,7 @@ async def start_processing(client, message: Message):
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
-                                progress_args=(final_name, upload_msg, time.time())
+                                progress_args=(final_name, progress_msg, time.time())
                             )
                             await client.send_audio(
                                 Config.LOG_DATABASE,
