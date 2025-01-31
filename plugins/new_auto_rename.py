@@ -88,7 +88,7 @@ async def set_thumbnail(client, message: Message):
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
 
-@app.on_message(filters.command("delthumb") & filters.private)
+@Client.on_message(filters.command("delthumb") & filters.private)
 async def delete_thumbnail(client, message: Message):
     try:
         await db.set_thumbnail(message.from_user.id, None)
