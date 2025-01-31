@@ -320,7 +320,7 @@ async def auto_rename_files(client, message):
         original_name = caption.strip().split("\n")[0]
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
         formatted_name = f"[{custom_username}] - {cleaned_name}"
-        formatted_name = os.path.splitext(base_name)[0]  # Remove existing extension
+        formatted_name = os.path.splitext(formatted_name)[0]  # Remove existing extension
         final_name = format_template.replace("{file_name}", formatted_name) + ".mkv" 
 
         # caption = message.caption
