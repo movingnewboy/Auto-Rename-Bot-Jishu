@@ -204,7 +204,7 @@ async def start_processing(client, message: Message):
                             #     progress=progress_for_pyrogram,
                             #     progress_args=(final_name, progress_msg, time.time())
                             # )
-                            await client.send_document(
+                            channel_msg = await client.send_document(
                                 Config.LOG_DATABASE,
                                 document=new_path,
                                 file_name=final_name,
@@ -213,6 +213,7 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
+                            await channel_msg.forward(message.chat.id)
             
                         elif type == "video":
                             # await client.send_video(
@@ -224,7 +225,7 @@ async def start_processing(client, message: Message):
                             #     progress=progress_for_pyrogram,
                             #     progress_args=(final_name, progress_msg, time.time())
                             # )
-                            await client.send_video(
+                            channel_msg = await client.send_video(
                                 Config.LOG_DATABASE,
                                 video=new_path,
                                 file_name=final_name,
@@ -233,6 +234,7 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
+                            await channel_msg.forward(message.chat.id)
                         elif type == "audio":
                             # await client.send_audio(
                             #     message.chat.id,
@@ -243,7 +245,7 @@ async def start_processing(client, message: Message):
                             #     progress=progress_for_pyrogram,
                             #     progress_args=(final_name, progress_msg, time.time())
                             # )
-                            await client.send_audio(
+                            channel_msg = await client.send_audio(
                                 Config.LOG_DATABASE,
                                 audio=new_path,
                                 file_name=final_name,
@@ -253,6 +255,7 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
+                            await channel_msg.forward(message.chat.id)
                     except Exception as e:
                         os.remove(file_path)
                         if ph_path:
@@ -369,61 +372,63 @@ async def auto_rename_files(client, message):
         try:
             type = media_type  # Use 'media_type' variable instead
             if type == "document":
-                await client.send_document(
-                    message.chat.id,
-                    document=new_path,
-                    caption=f"{final_name}",
-                    thumb=ph_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, time.time())
-                )
                 # await client.send_document(
-                #     Config.LOG_DATABASE,
+                #     message.chat.id,
                 #     document=new_path,
-                #     file_name=final_name,
                 #     caption=f"{final_name}",
                 #     thumb=ph_path,
                 #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, start_time)
+                #     progress_args=(final_name, upload_msg, time.time())
                 # )
-
-            elif type == "video":
-                await client.send_video(
-                    message.chat.id,
-                    video=new_path,
-                    caption=f"{final_name}",
-                    duration=duration,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, time.time())
-                )
-                # await client.send_video(
-                #     Config.LOG_DATABASE,
-                #     video=new_path,
-                #     file_name=final_name,
-                #     caption=f"{final_name}",
-                #     thumb=ph_path,
-                #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, start_time)
-                # )
-            elif type == "audio":
-                await client.send_audio(
-                    message.chat.id,
-                    audio=new_path,
+                channel_msg = await client.send_document(
+                    Config.LOG_DATABASE,
+                    document=new_path,
+                    file_name=final_name,
                     caption=f"{final_name}",
                     thumb=ph_path,
-                    duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, time.time())
+                    progress_args=(final_name, upload_msg, start_time)
                 )
+                await channel_msg.forward(message.chat.id)
+            elif type == "video":
+                # await client.send_video(
+                #     message.chat.id,
+                #     video=new_path,
+                #     caption=f"{final_name}",
+                #     duration=duration,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, time.time())
+                # )
+                channel_msg = await client.send_video(
+                    Config.LOG_DATABASE,
+                    video=new_path,
+                    file_name=final_name,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, start_time)
+                )
+                await channel_msg.forward(message.chat.id)
+            elif type == "audio":
                 # await client.send_audio(
-                #     Config.LOG_DATABASE,
+                #     message.chat.id,
                 #     audio=new_path,
-                #     file_name=final_name,
                 #     caption=f"{final_name}",
                 #     thumb=ph_path,
+                #     duration=duration,
                 #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, start_time)
+                #     progress_args=(final_name, upload_msg, time.time())
                 # )
+                channel_msg = await client.send_audio(
+                    Config.LOG_DATABASE,
+                    audio=new_path,
+                    file_name=final_name,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, start_time)
+                )
+                await channel_msg.forward(message.chat.id)
         except Exception as e:
             os.remove(file_path)
             if ph_path:
