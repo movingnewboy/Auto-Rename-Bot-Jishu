@@ -316,18 +316,19 @@ async def auto_rename_files(client, message):
         renaming_operations[file_id] = time.time()
         
         # original_name = get_file_name(message)
-        # caption = message.caption
-        # original_name = caption.strip().split("\n")[0]
-        # cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
-        # formatted_name = f"[{custom_username}] - {cleaned_name}"
-        # final_name = format_template.replace("{file_name}", formatted_name)
-
         caption = message.caption
         original_name = caption.strip().split("\n")[0]
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
-        base_name = f"[{custom_username}] - {cleaned_name}"
-        base_name = os.path.splitext(base_name)[0]  # Remove existing extension
-        final_name = template.replace("{file_name}", base_name) + ".mkv" 
+        formatted_name = f"[{custom_username}] - {cleaned_name}"
+        formatted_name = os.path.splitext(base_name)[0]  # Remove existing extension
+        final_name = format_template.replace("{file_name}", formatted_name) + ".mkv" 
+
+        # caption = message.caption
+        # original_name = caption.strip().split("\n")[0]
+        # cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
+        # base_name = f"[{custom_username}] - {cleaned_name}"
+        # base_name = os.path.splitext(base_name)[0]  # Remove existing extension
+        # final_name = template.replace("{file_name}", base_name) + ".mkv" 
         
         download_msg = await message.reply("Downloading file...")
         file_path = await client.download_media(
