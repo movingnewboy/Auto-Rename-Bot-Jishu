@@ -322,7 +322,7 @@ async def auto_rename_files(client, message):
         # formatted_name = f"[{custom_username}] - {cleaned_name}"
         # final_name = format_template.replace("{file_name}", formatted_name)
 
-        caption = msg.caption
+        caption = message.caption
         original_name = caption.strip().split("\n")[0]
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
         base_name = f"[{username}] - {cleaned_name}"
