@@ -255,6 +255,8 @@ async def auto_rename_files(client, message):
         new_path = os.path.join(os.path.dirname(file_path), final_name)
         os.rename(file_path, new_path)
 
+        upload_msg = await download_msg.edit("Uploading file...")
+        
         try:
             type = media_type  # Use 'media_type' variable instead
             if type == "document":
