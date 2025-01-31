@@ -222,7 +222,7 @@ async def start_processing(client, message: Message):
                                 Config.LOG_DATABASE,
                                 document=new_path,
                                 caption=f"{final_name}",
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
