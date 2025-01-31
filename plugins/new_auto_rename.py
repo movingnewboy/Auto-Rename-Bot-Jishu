@@ -111,7 +111,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         # media_type = await madflixbotz.get_media_preference(user_id)
-        # media_preference = await madflixbotz.get_media_preference(user_id)
+        media_preference = await madflixbotz.get_media_preference(user_id)
         # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
@@ -129,6 +129,20 @@ async def start_processing(client, message: Message):
                     continue
                     
                 if msg and (msg.document or msg.video or msg.audio):
+
+                    # Extract information from the incoming file name
+                    if msg.document:
+                        file_id = msg.document.file_id
+                        media_type = media_preference or "document"  # Use preferred media type or default to document
+                    elif msg.video:
+                        file_id = msg.video.file_id
+                        media_type = media_preference or "video"  # Use preferred media type or default to video
+                    elif msg.audio:
+                        file_id = msg.audio.file_id
+                        media_type = media_preference or "audio"  # Use preferred media type or default to audio
+                    else:
+                        return await message.reply_text("Unsupported File Type")
+            
                     # Filename Processing
                     # original_name = msg.document.file_name if msg.document else msg.video.file_name
                     caption = msg.caption
@@ -136,7 +150,7 @@ async def start_processing(client, message: Message):
                     cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
                     base_name = f"[{username}] - {cleaned_name}"
                     base_name = os.path.splitext(base_name)[0]  # Remove existing extension
-                    final_name = template.replace("{file_name}", base_name) + ".mkv"
+                    final_name = template.replace("{file_name}", base_name) + ".mkv"   
                     
                     # Download Process
                     start_time = time.time()
@@ -148,19 +162,101 @@ async def start_processing(client, message: Message):
                         progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
 
+                    duration = 0
+                    try:
+                        metadata = extractMetadata(createParser(file_path))
+                        if metadata.has("duration"):
+                            duration = metadata.get('duration').seconds
+                    except Exception as e:
+                        print(f"Error getting duration: {e}")
+                        
+                    c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
+            
+                    if c_thumb:
+                        ph_path = await client.download_media(c_thumb)
+                        print(f"Thumbnail downloaded successfully. Path: {ph_path}")
+                    elif media_type == "video" and message.video.thumbs:
+                        ph_path = await client.download_media(msg.video.thumbs[0].file_id)
+            
+                    if ph_path:
+                        Image.open(ph_path).convert("RGB").save(ph_path)
+                        img = Image.open(ph_path)
+                        img.resize((320, 320))
+                        img.save(ph_path, "JPEG")
+
                     # Use thumbnail if available
                     # thumb = thumb_file_id if thumb_file_id else None
                 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
-                    await client.send_document(
-                        Config.LOG_DATABASE,
-                        document=file_path,
-                        file_name=final_name,
-                        caption=f"{final_name}",
-                        progress=progress_for_pyrogram,
-                        progress_args=(final_name, progress_msg, start_time)
-                    )
+                    # await client.send_document(
+                    #     Config.LOG_DATABASE,
+                    #     document=file_path,
+                    #     file_name=final_name,
+                    #     caption=f"{final_name}",
+                    #     progress=progress_for_pyrogram,
+                    #     progress_args=(final_name, progress_msg, start_time)
+                    # )
+
+                    # Rename file
+                    new_path = os.path.join(os.path.dirname(file_path), final_name)
+                    os.rename(file_path, new_path)
+            
+                    # upload_msg = await download_msg.edit("Uploading file...")
+                    
+                    try:
+                        type = media_type  # Use 'media_type' variable instead
+                        if type == "document":
+                            await client.send_document(
+                                message.chat.id,
+                                document=new_path,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, upload_msg, time.time())
+                            )
+                            await client.send_document(
+                                Config.LOG_DATABASE,
+                                document=new_path,
+                                caption=f"{final_name}"
+                            )
+            
+                        elif type == "video":
+                            await client.send_video(
+                                message.chat.id,
+                                video=new_path,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, upload_msg, time.time())
+                            )
+                            await client.send_video(
+                                Config.LOG_DATABASE,
+                                video=new_path,
+                                caption=f"{final_name}"
+                            )
+                        elif type == "audio":
+                            await client.send_audio(
+                                message.chat.id,
+                                audio=new_path,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, upload_msg, time.time())
+                            )
+                            await client.send_audio(
+                                Config.LOG_DATABASE,
+                                audio=new_path,
+                                caption=f"{final_name}"
+                            )
+                    except Exception as e:
+                        os.remove(file_path)
+                        if ph_path:
+                            os.remove(ph_path)
+                        # Mark the file as ignored
+                        return await progress_msg.edit(f"Error: {e}")
         
                     print(f"{final_name} Downloading Completed✅")
                 
