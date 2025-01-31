@@ -109,7 +109,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         media_type = await madflixbotz.get_media_preference(user_id)
-        thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
+        # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
@@ -142,11 +142,11 @@ async def start_processing(client, message: Message):
                         msg,
                         file_name=final_name,
                         progress=progress_for_pyrogram,
-                        progress_args=(original_name, progress_msg, start_time)
+                        progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
 
                     # Use thumbnail if available
-                    thumb = thumb_file_id if thumb_file_id else None
+                    # thumb = thumb_file_id if thumb_file_id else None
                 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
@@ -155,7 +155,6 @@ async def start_processing(client, message: Message):
                         document=file_path,
                         file_name=final_name,
                         caption=f"{final_name}",
-                        thumb=thumb,
                         progress=progress_for_pyrogram,
                         progress_args=(final_name, progress_msg, start_time)
                     )
@@ -184,7 +183,7 @@ async def auto_rename_files(client, message):
     user_id = message.from_user.id
     format_template = await madflixbotz.get_format_template(user_id)
     custom_username = await madflixbotz.get_custom_username(user_id)
-    thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
+    # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
     
     if not format_template or not custom_username:
         return await message.reply("Please set both username and format template first")
@@ -205,11 +204,16 @@ async def auto_rename_files(client, message):
         final_name = format_template.replace("{file_name}", formatted_name)
         
         download_msg = await message.reply("Downloading file...")
-        file_path = await client.download_media(message, progress=progress_for_pyrogram, 
-                                              progress_args=("final_name", download_msg, time.time()))
+        file_path = await client.download_media(
+            message,
+            progress=progress_for_pyrogram,
+            progress_args=(original_name, download_msg, time.time())  # Correct order
+        )
+        # file_path = await client.download_media(message, progress=progress_for_pyrogram, 
+        #                                       progress_args=("final_name", download_msg, time.time()))
 
         # Use thumbnail if available
-        thumb = thumb_file_id if thumb_file_id else None
+        # thumb = thumb_file_id if thumb_file_id else None
         
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
@@ -221,7 +225,6 @@ async def auto_rename_files(client, message):
             message.chat.id,
             document=new_path,
             caption=f"{final_name}",
-            thumb=thumb,
             progress=progress_for_pyrogram,
             progress_args=("final_name", upload_msg, time.time())
         )
