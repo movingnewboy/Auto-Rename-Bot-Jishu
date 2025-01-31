@@ -66,7 +66,7 @@ async def set_media_type(client, message: Message):
         if media_type not in ["video", "document", "audio"]:
             return await message.reply("❗ Invalid media type. Use video/document/audio")
         
-        await db.set_media_preference(message.from_user.id, media_type)
+        await madflixbotz.set_media_preference(message.from_user.id, media_type)
         await message.reply(f"✅ Media preference set to: {media_type}")
     except IndexError:
         await message.reply("❗ Please provide media type after the command")
@@ -83,7 +83,7 @@ async def set_thumbnail(client, message: Message):
         file_id = message.photo.file_id
         
         # Save file_id in database
-        await db.set_thumbnail(message.from_user.id, file_id)
+        await madflixbotz.set_thumbnail(message.from_user.id, file_id)
         await message.reply("✅ Thumbnail set successfully!")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
@@ -91,7 +91,7 @@ async def set_thumbnail(client, message: Message):
 @Client.on_message(filters.command("delthumb") & filters.private)
 async def delete_thumbnail(client, message: Message):
     try:
-        await db.set_thumbnail(message.from_user.id, None)
+        await madflixbotz.set_thumbnail(message.from_user.id, None)
         await message.reply("✅ Thumbnail removed successfully!")
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
@@ -109,7 +109,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         media_type = await madflixbotz.get_media_preference(user_id)
-        thumb_file_id = await db.get_thumbnail(user_id)  # Get thumbnail file_id
+        thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
             return await message.reply("❗ Please set both username and template first")
