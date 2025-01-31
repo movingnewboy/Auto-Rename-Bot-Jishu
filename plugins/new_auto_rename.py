@@ -172,6 +172,8 @@ async def start_processing(client, message: Message):
                         print(f"Error getting duration: {e}")
                         
                     c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
+                    c_caption = await madflixbotz.get_caption(message.chat.id)
+                    
                     caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
             
                     if c_thumb:
@@ -351,6 +353,8 @@ async def auto_rename_files(client, message):
             print(f"Error getting duration: {e}")
             
         c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
+        c_caption = await madflixbotz.get_caption(message.chat.id)
+        
         caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
         
         if c_thumb:
