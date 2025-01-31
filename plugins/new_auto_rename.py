@@ -207,7 +207,7 @@ async def auto_rename_files(client, message):
         else:
             return await message.reply_text("Unsupported File Type")
 
-        print(f"Original File Name: {file_name}")
+        # print(f"Original File Name: {file_name}")
                  
         if file_id in renaming_operations:
             return
