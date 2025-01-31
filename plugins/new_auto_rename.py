@@ -281,6 +281,7 @@ async def auto_rename_files(client, message):
                     video=new_path,
                     caption=f"{final_name}",
                     thumb=ph_path,
+                    duration=duration,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
                 )
@@ -295,6 +296,7 @@ async def auto_rename_files(client, message):
                     audio=new_path,
                     caption=f"{final_name}",
                     thumb=ph_path,
+                    duration=duration,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
                 )
