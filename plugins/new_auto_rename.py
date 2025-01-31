@@ -128,8 +128,8 @@ async def start_processing(client, message: Message):
                 if msg and (msg.document or msg.video or msg.audio):
                     # Filename Processing
                     original_name = msg.document.file_name if msg.document else msg.video.file_name
-                    caption = msg.caption
-                    original_name = caption.strip().split("\n")[0]
+                    # caption = msg.caption
+                    # original_name = caption.strip().split("\n")[0]
                     cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
                     base_name = f"[{username}] - {cleaned_name}"
                     base_name = os.path.splitext(base_name)[0]  # Remove existing extension
@@ -184,7 +184,8 @@ async def auto_rename_files(client, message):
     user_id = message.from_user.id
     format_template = await madflixbotz.get_format_template(user_id)
     custom_username = await madflixbotz.get_custom_username(user_id)
-
+    thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
+    
     if not format_template or not custom_username:
         return await message.reply("Please set both username and format template first")
 
@@ -206,6 +207,9 @@ async def auto_rename_files(client, message):
         download_msg = await message.reply("Downloading file...")
         file_path = await client.download_media(message, progress=progress_for_pyrogram, 
                                               progress_args=("final_name", download_msg, time.time()))
+
+        # Use thumbnail if available
+        thumb = thumb_file_id if thumb_file_id else None
         
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
@@ -216,6 +220,8 @@ async def auto_rename_files(client, message):
         sent_message = await client.send_document(
             message.chat.id,
             document=new_path,
+            caption=f"{final_name}",
+            thumb=thumb,
             progress=progress_for_pyrogram,
             progress_args=("final_name", upload_msg, time.time())
         )
@@ -224,7 +230,7 @@ async def auto_rename_files(client, message):
         await client.send_document(
             Config.LOG_DATABASE,
             document=new_path,
-            caption=f"Renamed File: {final_name}\nOriginal Caption: {message.caption or 'No Caption'}"
+            caption=f"{final_name}"
         )
         
         await upload_msg.delete()
