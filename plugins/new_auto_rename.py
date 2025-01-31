@@ -219,7 +219,11 @@ async def start_processing(client, message: Message):
                             await client.send_document(
                                 Config.LOG_DATABASE,
                                 document=new_path,
-                                caption=f"{final_name}"
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
                             )
             
                         elif type == "video":
@@ -235,7 +239,12 @@ async def start_processing(client, message: Message):
                             await client.send_video(
                                 Config.LOG_DATABASE,
                                 video=new_path,
-                                caption=f"{final_name}"
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
                             )
                         elif type == "audio":
                             await client.send_audio(
@@ -250,7 +259,12 @@ async def start_processing(client, message: Message):
                             await client.send_audio(
                                 Config.LOG_DATABASE,
                                 audio=new_path,
-                                caption=f"{final_name}"
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
                             )
                     except Exception as e:
                         os.remove(file_path)
