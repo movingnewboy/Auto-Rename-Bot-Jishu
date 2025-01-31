@@ -62,20 +62,6 @@ async def set_username(client, message):
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
 
-# @Client.on_message(filters.command("setmedia") & filters.private)
-# async def set_media_type(client, message: Message):
-#     try:
-#         media_type = message.text.split(" ", 1)[1].strip().lower()
-#         if media_type not in ["video", "document", "audio"]:
-#             return await message.reply("❗ Invalid media type. Use video/document/audio")
-        
-#         await madflixbotz.set_media_preference(message.from_user.id, media_type)
-#         await message.reply(f"✅ Media preference set to: {media_type}")
-#     except IndexError:
-#         await message.reply("❗ Please provide media type after the command")
-#     except Exception as e:
-#         await message.reply(f"❌ Error: {str(e)}")
-
 @Client.on_message(filters.command("setthumb") & filters.private)
 async def set_thumbnail(client, message: Message):
     try:
@@ -210,14 +196,14 @@ async def start_processing(client, message: Message):
                     try:
                         type = media_type  # Use 'media_type' variable instead
                         if type == "document":
-                            await client.send_document(
-                                message.chat.id,
-                                document=new_path,
-                                caption=f"{final_name}",
-                                thumb=ph_path,
-                                progress=progress_for_pyrogram,
-                                progress_args=(final_name, progress_msg, time.time())
-                            )
+                            # await client.send_document(
+                            #     message.chat.id,
+                            #     document=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
                             await client.send_document(
                                 Config.LOG_DATABASE,
                                 document=new_path,
@@ -229,15 +215,15 @@ async def start_processing(client, message: Message):
                             )
             
                         elif type == "video":
-                            await client.send_video(
-                                message.chat.id,
-                                video=new_path,
-                                caption=f"{final_name}",
-                                thumb=ph_path,
-                                duration=duration,
-                                progress=progress_for_pyrogram,
-                                progress_args=(final_name, progress_msg, time.time())
-                            )
+                            # await client.send_video(
+                            #     message.chat.id,
+                            #     video=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     duration=duration,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
                             await client.send_video(
                                 Config.LOG_DATABASE,
                                 video=new_path,
@@ -249,15 +235,15 @@ async def start_processing(client, message: Message):
                                 progress_args=(final_name, progress_msg, start_time)
                             )
                         elif type == "audio":
-                            await client.send_audio(
-                                message.chat.id,
-                                audio=new_path,
-                                caption=f"{final_name}",
-                                thumb=ph_path,
-                                duration=duration,
-                                progress=progress_for_pyrogram,
-                                progress_args=(final_name, progress_msg, time.time())
-                            )
+                            # await client.send_audio(
+                            #     message.chat.id,
+                            #     audio=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     duration=duration,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
                             await client.send_audio(
                                 Config.LOG_DATABASE,
                                 audio=new_path,
@@ -384,15 +370,15 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
                 )
-                await client.send_document(
-                    Config.LOG_DATABASE,
-                    document=new_path,
-                    file_name=final_name,
-                    caption=f"{final_name}",
-                    thumb=ph_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, progress_msg, start_time)
-                )
+                # await client.send_document(
+                #     Config.LOG_DATABASE,
+                #     document=new_path,
+                #     file_name=final_name,
+                #     caption=f"{final_name}",
+                #     thumb=ph_path,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, start_time)
+                # )
 
             elif type == "video":
                 await client.send_video(
@@ -404,15 +390,15 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
                 )
-                await client.send_video(
-                    Config.LOG_DATABASE,
-                    video=new_path,
-                    file_name=final_name,
-                    caption=f"{final_name}",
-                    thumb=ph_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, progress_msg, start_time)
-                )
+                # await client.send_video(
+                #     Config.LOG_DATABASE,
+                #     video=new_path,
+                #     file_name=final_name,
+                #     caption=f"{final_name}",
+                #     thumb=ph_path,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, start_time)
+                # )
             elif type == "audio":
                 await client.send_audio(
                     message.chat.id,
@@ -423,15 +409,15 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
                 )
-                await client.send_audio(
-                    Config.LOG_DATABASE,
-                    audio=new_path,
-                    file_name=final_name,
-                    caption=f"{final_name}",
-                    thumb=ph_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, progress_msg, start_time)
-                )
+                # await client.send_audio(
+                #     Config.LOG_DATABASE,
+                #     audio=new_path,
+                #     file_name=final_name,
+                #     caption=f"{final_name}",
+                #     thumb=ph_path,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, start_time)
+                # )
         except Exception as e:
             os.remove(file_path)
             if ph_path:
@@ -475,23 +461,6 @@ def get_file_name(message):
     if message.audio:
         return message.audio.file_name
     return ""
-
-# Progress callback (keep your existing implementation)
-# def progress_for_pyrogram(current, total, message, start):
-#     # Your existing progress implementation
-#     pass
-
-# Command handlers (keep your existing /autorename implementation)
-# @Client.on_message(filters.private & filters.command("autorename"))
-# async def auto_rename_command(client, message):
-#     user_id = message.from_user.id
-#     format_template = message.text.split("/autorename", 1)[1].strip()
-    
-#     if "{file_name}" not in format_template:
-#         return await message.reply("Format template must include {file_name} placeholder")
-    
-#     await madflixbotz.set_format_template(user_id, format_template)
-#     await message.reply("Format template updated successfully!")
 
 @Client.on_message(filters.command("autorename") & filters.private)
 async def set_template(client, message):
