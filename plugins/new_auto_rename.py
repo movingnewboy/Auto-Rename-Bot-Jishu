@@ -3,6 +3,7 @@ from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import Message
 from PIL import Image
 from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
 import re
 import os
 import asyncio
