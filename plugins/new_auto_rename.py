@@ -59,19 +59,19 @@ async def set_username(client, message):
     except Exception as e:
         await message.reply(f"❌ Error: {str(e)}")
 
-@Client.on_message(filters.command("setmedia") & filters.private)
-async def set_media_type(client, message: Message):
-    try:
-        media_type = message.text.split(" ", 1)[1].strip().lower()
-        if media_type not in ["video", "document", "audio"]:
-            return await message.reply("❗ Invalid media type. Use video/document/audio")
+# @Client.on_message(filters.command("setmedia") & filters.private)
+# async def set_media_type(client, message: Message):
+#     try:
+#         media_type = message.text.split(" ", 1)[1].strip().lower()
+#         if media_type not in ["video", "document", "audio"]:
+#             return await message.reply("❗ Invalid media type. Use video/document/audio")
         
-        await madflixbotz.set_media_preference(message.from_user.id, media_type)
-        await message.reply(f"✅ Media preference set to: {media_type}")
-    except IndexError:
-        await message.reply("❗ Please provide media type after the command")
-    except Exception as e:
-        await message.reply(f"❌ Error: {str(e)}")
+#         await madflixbotz.set_media_preference(message.from_user.id, media_type)
+#         await message.reply(f"✅ Media preference set to: {media_type}")
+#     except IndexError:
+#         await message.reply("❗ Please provide media type after the command")
+#     except Exception as e:
+#         await message.reply(f"❌ Error: {str(e)}")
 
 @Client.on_message(filters.command("setthumb") & filters.private)
 async def set_thumbnail(client, message: Message):
