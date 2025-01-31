@@ -127,9 +127,9 @@ async def start_processing(client, message: Message):
                     
                 if msg and (msg.document or msg.video or msg.audio):
                     # Filename Processing
-                    original_name = msg.document.file_name if msg.document else msg.video.file_name
-                    # caption = msg.caption
-                    # original_name = caption.strip().split("\n")[0]
+                    # original_name = msg.document.file_name if msg.document else msg.video.file_name
+                    caption = msg.caption
+                    original_name = caption.strip().split("\n")[0]
                     cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
                     base_name = f"[{username}] - {cleaned_name}"
                     base_name = os.path.splitext(base_name)[0]  # Remove existing extension
@@ -140,7 +140,7 @@ async def start_processing(client, message: Message):
                     progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
                     file_path = await client.download_media(
                         msg,
-                        file_name=final_name,
+                        file_name=original_name,
                         progress=progress_for_pyrogram,
                         progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
@@ -198,7 +198,9 @@ async def auto_rename_files(client, message):
 
         renaming_operations[file_id] = time.time()
         
-        original_name = get_file_name(message)
+        # original_name = get_file_name(message)
+        caption = msg.caption
+        original_name = caption.strip().split("\n")[0]
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
         formatted_name = f"[{custom_username}] - {cleaned_name}"
         final_name = format_template.replace("{file_name}", formatted_name)
@@ -226,7 +228,7 @@ async def auto_rename_files(client, message):
             document=new_path,
             caption=f"{final_name}",
             progress=progress_for_pyrogram,
-            progress_args=("final_name", upload_msg, time.time())
+            progress_args=(final_name, upload_msg, time.time())
         )
         
         # Upload to log channel
