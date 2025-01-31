@@ -229,7 +229,6 @@ async def start_processing(client, message: Message):
                                 video=new_path,
                                 file_name=final_name,
                                 caption=f"{final_name}",
-                                thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
@@ -393,7 +392,6 @@ async def auto_rename_files(client, message):
                     message.chat.id,
                     video=new_path,
                     caption=f"{final_name}",
-                    thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
