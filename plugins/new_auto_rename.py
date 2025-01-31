@@ -108,8 +108,8 @@ async def start_processing(client, message: Message):
     try:
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
-        media_type = await madflixbotz.get_media_preference(user_id)
-        media_preference = await madflixbotz.get_media_preference(user_id)
+        # media_type = await madflixbotz.get_media_preference(user_id)
+        # media_preference = await madflixbotz.get_media_preference(user_id)
         # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
