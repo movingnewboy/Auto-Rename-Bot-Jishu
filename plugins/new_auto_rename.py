@@ -1,6 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, RPCError
 from pyrogram.types import Message
+from PIL import Image
 import re
 import os
 import asyncio
