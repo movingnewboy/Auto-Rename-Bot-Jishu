@@ -221,7 +221,7 @@ async def start_processing(client, message: Message):
                             await client.send_document(
                                 Config.LOG_DATABASE,
                                 document=new_path,
-                                caption=f"{final_name}",
+                                file_name=final_name,
                                 caption=f"{final_name}",
                                 thumb=ph_path,
                                 progress=progress_for_pyrogram,
