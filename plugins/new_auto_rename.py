@@ -189,9 +189,23 @@ async def auto_rename_files(client, message):
         return await message.reply("Please set both username and format template first")
 
     try:
-        file_id = message.document.file_id if message.document else \
-                 message.video.file_id if message.video else \
-                 message.audio.file_id
+        # Extract information from the incoming file name
+        if message.document:
+            file_id = message.document.file_id
+            # file_name = message.document.file_name
+            media_type = media_preference or "document"  # Use preferred media type or default to document
+        elif message.video:
+            file_id = message.video.file_id
+            # file_name = f"{message.video.file_name}.mp4"
+            media_type = media_preference or "video"  # Use preferred media type or default to video
+        elif message.audio:
+            file_id = message.audio.file_id
+            # file_name = f"{message.audio.file_name}.mp3"
+            media_type = media_preference or "audio"  # Use preferred media type or default to audio
+        else:
+            return await message.reply_text("Unsupported File Type")
+
+        print(f"Original File Name: {file_name}")
                  
         if file_id in renaming_operations:
             return
@@ -211,32 +225,101 @@ async def auto_rename_files(client, message):
             progress=progress_for_pyrogram,
             progress_args=(original_name, download_msg, time.time())  # Correct order
         )
-        # file_path = await client.download_media(message, progress=progress_for_pyrogram, 
-        #                                       progress_args=("final_name", download_msg, time.time()))
 
-        # Use thumbnail if available
-        # thumb = thumb_file_id if thumb_file_id else None
+        duration = 0
+        try:
+            metadata = extractMetadata(createParser(file_path))
+            if metadata.has("duration"):
+                duration = metadata.get('duration').seconds
+        except Exception as e:
+            print(f"Error getting duration: {e}")
+            
+        c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
+
+        if c_thumb:
+            ph_path = await client.download_media(c_thumb)
+            print(f"Thumbnail downloaded successfully. Path: {ph_path}")
+        elif media_type == "video" and message.video.thumbs:
+            ph_path = await client.download_media(message.video.thumbs[0].file_id)
+
+        if ph_path:
+            Image.open(ph_path).convert("RGB").save(ph_path)
+            img = Image.open(ph_path)
+            img.resize((320, 320))
+            img.save(ph_path, "JPEG")   
         
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
         os.rename(file_path, new_path)
+
+        try:
+            type = media_type  # Use 'media_type' variable instead
+            if type == "document":
+                await client.send_document(
+                    message.chat.id,
+                    document=new_path,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, time.time())
+                )
+                await client.send_document(
+                    Config.LOG_DATABASE,
+                    document=new_path,
+                    caption=f"{final_name}"
+                )
+
+            elif type == "video":
+                await client.send_video(
+                    message.chat.id,
+                    video=new_path,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, time.time())
+                )
+                await client.send_video(
+                    Config.LOG_DATABASE,
+                    video=new_path,
+                    caption=f"{final_name}"
+                )
+            elif type == "audio":
+                await client.send_audio(
+                    message.chat.id,
+                    audio=new_path,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, time.time())
+                )
+                await client.send_audio(
+                    Config.LOG_DATABASE,
+                    audio=new_path,
+                    caption=f"{final_name}"
+                )
+        except Exception as e:
+            os.remove(file_path)
+            if ph_path:
+                os.remove(ph_path)
+            # Mark the file as ignored
+            return await upload_msg.edit(f"Error: {e}")
         
         # Upload to user
-        upload_msg = await download_msg.edit("Uploading file...")
-        sent_message = await client.send_document(
-            message.chat.id,
-            document=new_path,
-            caption=f"{final_name}",
-            progress=progress_for_pyrogram,
-            progress_args=(final_name, upload_msg, time.time())
-        )
+        # upload_msg = await download_msg.edit("Uploading file...")
+        # sent_message = await client.send_document(
+        #     message.chat.id,
+        #     document=new_path,
+        #     caption=f"{final_name}",
+        #     progress=progress_for_pyrogram,
+        #     progress_args=(final_name, upload_msg, time.time())
+        # )
         
         # Upload to log channel
-        await client.send_document(
-            Config.LOG_DATABASE,
-            document=new_path,
-            caption=f"{final_name}"
-        )
+        # await client.send_document(
+        #     Config.LOG_DATABASE,
+        #     document=new_path,
+        #     caption=f"{final_name}"
+        # )
         
         await upload_msg.delete()
         os.remove(new_path)
