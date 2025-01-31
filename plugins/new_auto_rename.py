@@ -172,9 +172,8 @@ async def start_processing(client, message: Message):
                         print(f"Error getting duration: {e}")
                         
                     c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
-                    c_caption = await madflixbotz.get_caption(message.chat.id)
-                    
-                    caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
+                    # c_caption = await madflixbotz.get_caption(message.chat.id)
+                    # caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
             
                     if c_thumb:
                         ph_path = await client.download_media(c_thumb)
@@ -214,7 +213,7 @@ async def start_processing(client, message: Message):
                             await client.send_document(
                                 message.chat.id,
                                 document=new_path,
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, time.time())
@@ -222,7 +221,7 @@ async def start_processing(client, message: Message):
                             await client.send_document(
                                 Config.LOG_DATABASE,
                                 document=new_path,
-                                file_name=final_name,
+                                caption=f"{final_name}",
                                 caption=caption,
                                 thumb=ph_path,
                                 progress=progress_for_pyrogram,
@@ -233,7 +232,7 @@ async def start_processing(client, message: Message):
                             await client.send_video(
                                 message.chat.id,
                                 video=new_path,
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
@@ -243,7 +242,7 @@ async def start_processing(client, message: Message):
                                 Config.LOG_DATABASE,
                                 video=new_path,
                                 file_name=final_name,
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
@@ -253,7 +252,7 @@ async def start_processing(client, message: Message):
                             await client.send_audio(
                                 message.chat.id,
                                 audio=new_path,
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
@@ -263,7 +262,7 @@ async def start_processing(client, message: Message):
                                 Config.LOG_DATABASE,
                                 audio=new_path,
                                 file_name=final_name,
-                                caption=caption,
+                                caption=f"{final_name}",
                                 thumb=ph_path,
                                 duration=duration,
                                 progress=progress_for_pyrogram,
@@ -353,9 +352,8 @@ async def auto_rename_files(client, message):
             print(f"Error getting duration: {e}")
             
         c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
-        c_caption = await madflixbotz.get_caption(message.chat.id)
-        
-        caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
+        # c_caption = await madflixbotz.get_caption(message.chat.id)
+        # caption = c_caption.format(filename=final_name) if c_caption else f"**{final_name}**"
         
         if c_thumb:
             ph_path = await client.download_media(c_thumb)
@@ -381,7 +379,7 @@ async def auto_rename_files(client, message):
                 await client.send_document(
                     message.chat.id,
                     document=new_path,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, time.time())
@@ -390,7 +388,7 @@ async def auto_rename_files(client, message):
                     Config.LOG_DATABASE,
                     document=new_path,
                     file_name=final_name,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, progress_msg, start_time)
@@ -400,7 +398,7 @@ async def auto_rename_files(client, message):
                 await client.send_video(
                     message.chat.id,
                     video=new_path,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
@@ -410,7 +408,7 @@ async def auto_rename_files(client, message):
                     Config.LOG_DATABASE,
                     video=new_path,
                     file_name=final_name,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, progress_msg, start_time)
@@ -419,7 +417,7 @@ async def auto_rename_files(client, message):
                 await client.send_audio(
                     message.chat.id,
                     audio=new_path,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
@@ -429,7 +427,7 @@ async def auto_rename_files(client, message):
                     Config.LOG_DATABASE,
                     audio=new_path,
                     file_name=final_name,
-                    caption=caption,
+                    caption=f"{final_name}",
                     thumb=ph_path,
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, progress_msg, start_time)
