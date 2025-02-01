@@ -213,7 +213,13 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
-                            await channel_msg.forward(message.chat.id)
+                            # Forward the uploaded file from the channel back to the bot without forwarder name
+                            if channel_msg:
+                                await client.copy_message(
+                                    chat_id=message.chat.id,  # Send to user
+                                    from_chat_id=Config.LOG_DATABASE,  # From the channel
+                                    message_id=channel_msg.id  # Get the uploaded message ID
+                                )
             
                         elif type == "video":
                             # await client.send_video(
@@ -234,7 +240,12 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
-                            await channel_msg.forward(message.chat.id)
+                            if channel_msg:
+                                await client.copy_message(
+                                    chat_id=message.chat.id,  # Send to user
+                                    from_chat_id=Config.LOG_DATABASE,  # From the channel
+                                    message_id=channel_msg.id  # Get the uploaded message ID
+                                )
                         elif type == "audio":
                             # await client.send_audio(
                             #     message.chat.id,
@@ -255,7 +266,12 @@ async def start_processing(client, message: Message):
                                 progress=progress_for_pyrogram,
                                 progress_args=(final_name, progress_msg, start_time)
                             )
-                            await channel_msg.forward(message.chat.id)
+                            if channel_msg:
+                                await client.copy_message(
+                                    chat_id=message.chat.id,  # Send to user
+                                    from_chat_id=Config.LOG_DATABASE,  # From the channel
+                                    message_id=channel_msg.id  # Get the uploaded message ID
+                                )
                     except Exception as e:
                         os.remove(file_path)
                         if ph_path:
@@ -389,7 +405,12 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, start_time)
                 )
-                await channel_msg.forward(message.chat.id)
+                if channel_msg:
+                    await client.copy_message(
+                        chat_id=message.chat.id,  # Send to user
+                        from_chat_id=Config.LOG_DATABASE,  # From the channel
+                        message_id=channel_msg.id  # Get the uploaded message ID
+                    )
             elif type == "video":
                 # await client.send_video(
                 #     message.chat.id,
@@ -408,7 +429,12 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, start_time)
                 )
-                await channel_msg.forward(message.chat.id)
+                if channel_msg:
+                    await client.copy_message(
+                        chat_id=message.chat.id,  # Send to user
+                        from_chat_id=Config.LOG_DATABASE,  # From the channel
+                        message_id=channel_msg.id  # Get the uploaded message ID
+                    )
             elif type == "audio":
                 # await client.send_audio(
                 #     message.chat.id,
@@ -428,7 +454,12 @@ async def auto_rename_files(client, message):
                     progress=progress_for_pyrogram,
                     progress_args=(final_name, upload_msg, start_time)
                 )
-                await channel_msg.forward(message.chat.id)
+                if channel_msg:
+                    await client.copy_message(
+                        chat_id=message.chat.id,  # Send to user
+                        from_chat_id=Config.LOG_DATABASE,  # From the channel
+                        message_id=channel_msg.id  # Get the uploaded message ID
+                    )
         except Exception as e:
             os.remove(file_path)
             if ph_path:
