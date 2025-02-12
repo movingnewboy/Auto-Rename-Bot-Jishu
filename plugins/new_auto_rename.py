@@ -552,6 +552,7 @@ async def auto_rename_files(client, message: Message):
                 file_name=final_name,
                 progress=progress_for_pyrogram,
                 progress_args=(final_name, upload_msg, start_time)
+            )
             
             # Upload to log channel
             await client.send_document(
