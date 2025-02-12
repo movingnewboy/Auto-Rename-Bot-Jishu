@@ -98,7 +98,7 @@ async def start_processing(client, message: Message):
         template = await madflixbotz.get_format_template(user_id)
         username = await madflixbotz.get_custom_username(user_id)
         # media_type = await madflixbotz.get_media_preference(user_id)
-        media_preference = await madflixbotz.get_(user_id)
+        media_preference = await madflixbotz.get_media_preference(user_id)
         # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
         
         if not template or not username:
@@ -149,13 +149,13 @@ async def start_processing(client, message: Message):
                         progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
 
-                    # duration = 0
-                    # try:
-                    #     metadata = extractMetadata(createParser(file_path))
-                    #     if metadata.has("duration"):
-                    #         duration = metadata.get('duration').seconds
-                    # except Exception as e:
-                    #     print(f"Error getting duration: {e}")
+                    duration = 0
+                    try:
+                        metadata = extractMetadata(createParser(file_path))
+                        if metadata.has("duration"):
+                            duration = metadata.get('duration').seconds
+                    except Exception as e:
+                        print(f"Error getting duration: {e}")
                         
                     c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
                     # c_caption = await madflixbotz.get_caption(message.chat.id)
@@ -178,106 +178,88 @@ async def start_processing(client, message: Message):
                 
                     # Upload Process
                     await progress_msg.edit("📤 Uploading to channel...")
-                    await client.send_document(
-                        Config.LOG_DATABASE,
-                        document=file_path,
-                        file_name=final_name,
-                        caption=f"{final_name}",
-                        progress=progress_for_pyrogram,
-                        progress_args=(final_name, progress_msg, start_time)
-                    )
+                    # await client.send_document(
+                    #     Config.LOG_DATABASE,
+                    #     document=file_path,
+                    #     file_name=final_name,
+                    #     caption=f"{final_name}",
+                    #     progress=progress_for_pyrogram,
+                    #     progress_args=(final_name, progress_msg, start_time)
+                    # )
 
-                    # # Rename file
-                    # new_path = os.path.join(os.path.dirname(file_path), final_name)
-                    # os.rename(file_path, new_path)
+                    # Rename file
+                    new_path = os.path.join(os.path.dirname(file_path), final_name)
+                    os.rename(file_path, new_path)
             
-                    # # upload_msg = await download_msg.edit("Uploading file...")
+                    # upload_msg = await download_msg.edit("Uploading file...")
                     
-                    # try:
-                    #     type = media_type  # Use 'media_type' variable instead
-                    #     if type == "document":
-                    #         await client.send_document(
-                    #             message.chat.id,
-                    #             document=new_path,
-                    #             caption=f"{final_name}",
-                    #             thumb=ph_path,
-                    #             progress=progress_for_pyrogram,
-                    #             progress_args=(final_name, progress_msg, time.time())
-                    #         )
-                    #         # channel_msg = await client.send_document(
-                    #         #     Config.LOG_DATABASE,
-                    #         #     document=new_path,
-                    #         #     file_name=final_name,
-                    #         #     caption=f"{final_name}",
-                    #         #     thumb=ph_path,
-                    #         #     progress=progress_for_pyrogram,
-                    #         #     progress_args=(final_name, progress_msg, start_time)
-                    #         # )
-                    #         # # Forward the uploaded file from the channel back to the bot without forwarder name
-                    #         # if channel_msg:
-                    #         #     await client.copy_message(
-                    #         #         chat_id=message.chat.id,  # Send to user
-                    #         #         from_chat_id=Config.LOG_DATABASE,  # From the channel
-                    #         #         message_id=channel_msg.id  # Get the uploaded message ID
-                    #         #     )
+                    try:
+                        type = media_type  # Use 'media_type' variable instead
+                        if type == "document":
+                            # await client.send_document(
+                            #     message.chat.id,
+                            #     document=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
+                            await client.send_document(
+                                Config.LOG_DATABASE,
+                                document=new_path,
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
+                            )
             
-                    #     elif type == "video":
-                    #         await client.send_video(
-                    #             message.chat.id,
-                    #             video=new_path,
-                    #             caption=f"{final_name}",
-                    #             thumb=ph_path,
-                    #             duration=duration,
-                    #             progress=progress_for_pyrogram,
-                    #             progress_args=(final_name, progress_msg, time.time())
-                    #         )
-                    #         # channel_msg = await client.send_video(
-                    #         #     Config.LOG_DATABASE,
-                    #         #     video=new_path,
-                    #         #     file_name=final_name,
-                    #         #     caption=f"{final_name}",
-                    #         #     duration=duration,
-                    #         #     progress=progress_for_pyrogram,
-                    #         #     progress_args=(final_name, progress_msg, start_time)
-                    #         # )
-                    #         # if channel_msg:
-                    #         #     await client.copy_message(
-                    #         #         chat_id=message.chat.id,  # Send to user
-                    #         #         from_chat_id=Config.LOG_DATABASE,  # From the channel
-                    #         #         message_id=channel_msg.id  # Get the uploaded message ID
-                    #         #     )
-                    #     elif type == "audio":
-                    #         await client.send_audio(
-                    #             message.chat.id,
-                    #             audio=new_path,
-                    #             caption=f"{final_name}",
-                    #             thumb=ph_path,
-                    #             duration=duration,
-                    #             progress=progress_for_pyrogram,
-                    #             progress_args=(final_name, progress_msg, time.time())
-                    #         )
-                    #         # channel_msg = await client.send_audio(
-                    #         #     Config.LOG_DATABASE,
-                    #         #     audio=new_path,
-                    #         #     file_name=final_name,
-                    #         #     caption=f"{final_name}",
-                    #         #     thumb=ph_path,
-                    #         #     duration=duration,
-                    #         #     progress=progress_for_pyrogram,
-                    #         #     progress_args=(final_name, progress_msg, start_time)
-                    #         # )
-                    #         # if channel_msg:
-                    #         #     await client.copy_message(
-                    #         #         chat_id=message.chat.id,  # Send to user
-                    #         #         from_chat_id=Config.LOG_DATABASE,  # From the channel
-                    #         #         message_id=channel_msg.id  # Get the uploaded message ID
-                    #         #     )
-                    # except Exception as e:
-                    #     os.remove(file_path)
-                    #     if ph_path:
-                    #         os.remove(ph_path)
-                    #     # Mark the file as ignored
-                    #     return await progress_msg.edit(f"Error: {e}")
+                        elif type == "video":
+                            # await client.send_video(
+                            #     message.chat.id,
+                            #     video=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     duration=duration,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
+                            await client.send_video(
+                                Config.LOG_DATABASE,
+                                video=new_path,
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
+                            )
+                        elif type == "audio":
+                            # await client.send_audio(
+                            #     message.chat.id,
+                            #     audio=new_path,
+                            #     caption=f"{final_name}",
+                            #     thumb=ph_path,
+                            #     duration=duration,
+                            #     progress=progress_for_pyrogram,
+                            #     progress_args=(final_name, progress_msg, time.time())
+                            # )
+                            await client.send_audio(
+                                Config.LOG_DATABASE,
+                                audio=new_path,
+                                file_name=final_name,
+                                caption=f"{final_name}",
+                                thumb=ph_path,
+                                duration=duration,
+                                progress=progress_for_pyrogram,
+                                progress_args=(final_name, progress_msg, start_time)
+                            )
+                    except Exception as e:
+                        os.remove(file_path)
+                        if ph_path:
+                            os.remove(ph_path)
+                        # Mark the file as ignored
+                        return await progress_msg.edit(f"Error: {e}")
         
                     print(f"{final_name} Downloading Completed✅")
                 
@@ -333,12 +315,12 @@ async def auto_rename_files(client, message):
 
         renaming_operations[file_id] = time.time()
         
-        original_name = get_file_name(message)
-        # caption = message.caption
-        # caption_name = caption.strip().split("\n")[0]
+        # original_name = get_file_name(message)
+        caption = message.caption
+        original_name = caption.strip().split("\n")[0]
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
         formatted_name = f"[{custom_username}] - {cleaned_name}"
-        formatted_name = os.path.splitext(formatted_name)[0]  # Remove existing extension
+        formatted_name = os.path.splitext(base_name)[0]  # Remove existing extension
         final_name = format_template.replace("{file_name}", formatted_name) + ".mkv" 
 
         # caption = message.caption
@@ -388,78 +370,62 @@ async def auto_rename_files(client, message):
         try:
             type = media_type  # Use 'media_type' variable instead
             if type == "document":
-                # await client.send_document(
-                #     message.chat.id,
-                #     document=new_path,
-                #     caption=f"{final_name}",
-                #     thumb=ph_path,
-                #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, time.time())
-                # )
-                channel_msg = await client.send_document(
-                    Config.LOG_DATABASE,
+                await client.send_document(
+                    message.chat.id,
                     document=new_path,
-                    file_name=final_name,
                     caption=f"{final_name}",
                     thumb=ph_path,
                     progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, start_time)
+                    progress_args=(final_name, upload_msg, time.time())
                 )
-                if channel_msg:
-                    await client.copy_message(
-                        chat_id=message.chat.id,  # Send to user
-                        from_chat_id=Config.LOG_DATABASE,  # From the channel
-                        message_id=channel_msg.id  # Get the uploaded message ID
-                    )
-            elif type == "video":
-                # await client.send_video(
-                #     message.chat.id,
-                #     video=new_path,
-                #     caption=f"{final_name}",
-                #     duration=duration,
-                #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, time.time())
-                # )
-                channel_msg = await client.send_video(
-                    Config.LOG_DATABASE,
-                    video=new_path,
-                    file_name=final_name,
-                    caption=f"{final_name}",
-                    thumb=ph_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, start_time)
-                )
-                if channel_msg:
-                    await client.copy_message(
-                        chat_id=message.chat.id,  # Send to user
-                        from_chat_id=Config.LOG_DATABASE,  # From the channel
-                        message_id=channel_msg.id  # Get the uploaded message ID
-                    )
-            elif type == "audio":
-                # await client.send_audio(
-                #     message.chat.id,
-                #     audio=new_path,
+                # await client.send_document(
+                #     Config.LOG_DATABASE,
+                #     document=new_path,
+                #     file_name=final_name,
                 #     caption=f"{final_name}",
                 #     thumb=ph_path,
-                #     duration=duration,
                 #     progress=progress_for_pyrogram,
-                #     progress_args=(final_name, upload_msg, time.time())
+                #     progress_args=(final_name, upload_msg, start_time)
                 # )
-                channel_msg = await client.send_audio(
-                    Config.LOG_DATABASE,
-                    audio=new_path,
-                    file_name=final_name,
+
+            elif type == "video":
+                await client.send_video(
+                    message.chat.id,
+                    video=new_path,
                     caption=f"{final_name}",
                     thumb=ph_path,
+                    duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=(final_name, upload_msg, start_time)
+                    progress_args=(final_name, upload_msg, time.time())
                 )
-                if channel_msg:
-                    await client.copy_message(
-                        chat_id=message.chat.id,  # Send to user
-                        from_chat_id=Config.LOG_DATABASE,  # From the channel
-                        message_id=channel_msg.id  # Get the uploaded message ID
-                    )
+                # await client.send_video(
+                #     Config.LOG_DATABASE,
+                #     video=new_path,
+                #     file_name=final_name,
+                #     caption=f"{final_name}",
+                #     thumb=ph_path,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, start_time)
+                # )
+            elif type == "audio":
+                await client.send_audio(
+                    message.chat.id,
+                    audio=new_path,
+                    caption=f"{final_name}",
+                    thumb=ph_path,
+                    duration=duration,
+                    progress=progress_for_pyrogram,
+                    progress_args=(final_name, upload_msg, time.time())
+                )
+                # await client.send_audio(
+                #     Config.LOG_DATABASE,
+                #     audio=new_path,
+                #     file_name=final_name,
+                #     caption=f"{final_name}",
+                #     thumb=ph_path,
+                #     progress=progress_for_pyrogram,
+                #     progress_args=(final_name, upload_msg, start_time)
+                # )
         except Exception as e:
             os.remove(file_path)
             if ph_path:
@@ -493,92 +459,6 @@ async def auto_rename_files(client, message):
         if os.path.exists(new_path):
             os.remove(new_path)
         del renaming_operations[file_id]
-
-# @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-# async def auto_rename_files(client, message: Message):
-#     user_id = message.from_user.id
-#     format_template = await madflixbotz.get_format_template(user_id)
-#     custom_username = await madflixbotz.get_custom_username(user_id)
-
-#     if not format_template or not custom_username:
-#         return await message.reply("Please set both username and format template first")
-
-#     try:
-#         file_id = message.document.file_id if message.document else \
-#                  message.video.file_id if message.video else \
-#                  message.audio.file_id
-                 
-#         if file_id in renaming_operations:
-#             return
-
-#         renaming_operations[file_id] = time.time()
-        
-#         # Create downloads directory
-#         # download_dir = "downloads"
-#         # os.makedirs(download_dir, exist_ok=True)
-#         # file_path = os.path.join(download_dir, final_name)
-
-#         caption = message.caption
-#         original_name = caption.strip().split("\n")[0]
-#         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
-#         base_name = f"[{custom_username}] - {cleaned_name}"
-#         base_name = os.path.splitext(base_name)[0]  # Remove existing extension
-#         final_name = template.replace("{file_name}", base_name) + ".mkv" 
-        
-#         # Download with progress
-#         start_time = time.time()
-#         download_msg = await message.reply("Downloading file...")
-#         try:
-#             file_path = await client.download_media(
-#                 message,
-#                 file_name=file_path,  # Save directly to final path
-#                 progress=progress_for_pyrogram,
-#                 progress_args=(original_name, download_msg, start_time)
-#             )
-            
-#             # Check if file_path is valid
-#             if not file_path or not os.path.exists(file_path):
-#                 await message.reply("❌ File download failed")
-#                 return
-#         except Exception as e:
-#             await message.reply(f"Download failed: {str(e)}")
-#             return
-
-#         # Upload with progress
-#         start_time = time.time()
-#         upload_msg = await download_msg.edit("Uploading file...")
-#         try:
-#             # Upload to user
-#             sent_message = await client.send_document(
-#                 message.chat.id,
-#                 document=file_path,
-#                 file_name=final_name,
-#                 progress=progress_for_pyrogram,
-#                 progress_args=(final_name, upload_msg, start_time)
-#             )
-            
-#             # Upload to log channel
-#             await client.send_document(
-#                 Config.LOG_DATABASE,
-#                 document=file_path,
-#                 file_name=final_name,
-#                 caption=f"Renamed from: {original_name}")
-#         except Exception as e:
-#             await message.reply(f"Upload failed: {str(e)}")
-#         finally:
-#             # Cleanup after both uploads complete
-#             if file_path and os.path.exists(file_path):
-#                 os.remove(file_path)
-            
-#         await upload_msg.delete()
-#         del renaming_operations[file_id]
-        
-#     except Exception as e:
-#         await message.reply(f"Error processing file: {str(e)}")
-#         if 'file_path' in locals() and file_path and os.path.exists(file_path):
-#             os.remove(file_path)
-#         if file_id in renaming_operations:
-#             del renaming_operations[file_id]
 
 # Helper function
 def get_file_name(message):
