@@ -494,7 +494,7 @@ async def start_processing(client, message: Message):
 #             os.remove(new_path)
 #         del renaming_operations[file_id]
 
-@app.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
 async def auto_rename_files(client, message: Message):
     user_id = message.from_user.id
     format_template = await madflixbotz.get_format_template(user_id)
