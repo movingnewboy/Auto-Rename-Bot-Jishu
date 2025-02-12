@@ -518,44 +518,62 @@ async def auto_rename_files(client, message: Message):
         formatted_name = f"[{custom_username}] - {cleaned_name}"
         final_name = format_template.replace("{file_name}", formatted_name)
         
+        # Create downloads directory
+        download_dir = "downloads"
+        os.makedirs(download_dir, exist_ok=True)
+        file_path = os.path.join(download_dir, final_name)
+
         # Download with progress
         start_time = time.time()
         download_msg = await message.reply("Downloading file...")
-        file_path = await client.download_media(
-            message,
-            progress=progress_for_pyrogram,
-            progress_args=(original_name, download_msg, start_time)
-        )
-        
+        try:
+            file_path = await client.download_media(
+                message,
+                file_name=file_path,  # Save directly to final path
+                progress=progress_for_pyrogram,
+                progress_args=(original_name, download_msg, start_time)
+            )
+        except Exception as e:
+            await message.reply(f"Download failed: {str(e)}")
+            return
+
+        if not os.path.exists(file_path):
+            await message.reply("❌ File download failed")
+            return
+
         # Upload with progress
         start_time = time.time()
         upload_msg = await download_msg.edit("Uploading file...")
-        await client.send_document(
-            message.chat.id,
-            document=file_path,
-            file_name=final_name,
-            progress=progress_for_pyrogram,
-            progress_args=(final_name, upload_msg, start_time)
-        )
-        
-        # Send to log channel
-        await client.send_document(
-            Config.LOG_DATABASE,
-            document=file_path,
-            file_name=final_name,
-            caption=f"Renamed from: {original_name}"
-        )
-        
-        # Cleanup
+        try:
+            # Upload to user
+            sent_message = await client.send_document(
+                message.chat.id,
+                document=file_path,
+                file_name=final_name,
+                progress=progress_for_pyrogram,
+                progress_args=(final_name, upload_msg, start_time)
+            
+            # Upload to log channel
+            await client.send_document(
+                Config.LOG_DATABASE,
+                document=file_path,
+                file_name=final_name,
+                caption=f"Renamed from: {original_name}"
+            )
+        finally:
+            # Cleanup after both uploads complete
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
         await upload_msg.delete()
-        os.remove(file_path)
         del renaming_operations[file_id]
         
     except Exception as e:
         await message.reply(f"Error processing file: {str(e)}")
         if 'file_path' in locals() and os.path.exists(file_path):
             os.remove(file_path)
-        del renaming_operations[file_id]
+        if file_id in renaming_operations:
+            del renaming_operations[file_id]
 
 # Helper function
 def get_file_name(message):
