@@ -532,13 +532,13 @@ async def auto_rename_files(client, message: Message):
                 file_name=file_path,  # Save directly to final path
                 progress=progress_for_pyrogram,
                 progress_args=(original_name, download_msg, start_time)
-            )
+            
+            # Check if file_path is valid
+            if not file_path or not os.path.exists(file_path):
+                await message.reply("❌ File download failed")
+                return
         except Exception as e:
             await message.reply(f"Download failed: {str(e)}")
-            return
-
-        if not os.path.exists(file_path):
-            await message.reply("❌ File download failed")
             return
 
         # Upload with progress
@@ -552,18 +552,18 @@ async def auto_rename_files(client, message: Message):
                 file_name=final_name,
                 progress=progress_for_pyrogram,
                 progress_args=(final_name, upload_msg, start_time)
-            )
             
             # Upload to log channel
             await client.send_document(
                 Config.LOG_DATABASE,
                 document=file_path,
                 file_name=final_name,
-                caption=f"Renamed from: {original_name}"
-            )
+                caption=f"Renamed from: {original_name}")
+        except Exception as e:
+            await message.reply(f"Upload failed: {str(e)}")
         finally:
             # Cleanup after both uploads complete
-            if os.path.exists(file_path):
+            if file_path and os.path.exists(file_path):
                 os.remove(file_path)
             
         await upload_msg.delete()
@@ -571,7 +571,7 @@ async def auto_rename_files(client, message: Message):
         
     except Exception as e:
         await message.reply(f"Error processing file: {str(e)}")
-        if 'file_path' in locals() and os.path.exists(file_path):
+        if 'file_path' in locals() and file_path and os.path.exists(file_path):
             os.remove(file_path)
         if file_id in renaming_operations:
             del renaming_operations[file_id]
