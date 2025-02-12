@@ -149,13 +149,13 @@ async def start_processing(client, message: Message):
                         progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
 
-                    duration = 0
-                    try:
-                        metadata = extractMetadata(createParser(file_path))
-                        if metadata.has("duration"):
-                            duration = metadata.get('duration').seconds
-                    except Exception as e:
-                        print(f"Error getting duration: {e}")
+                    # duration = 0
+                    # try:
+                    #     metadata = extractMetadata(createParser(file_path))
+                    #     if metadata.has("duration"):
+                    #         duration = metadata.get('duration').seconds
+                    # except Exception as e:
+                    #     print(f"Error getting duration: {e}")
                         
                     c_thumb = await madflixbotz.get_thumbnail(message.chat.id)
                     # c_caption = await madflixbotz.get_caption(message.chat.id)
