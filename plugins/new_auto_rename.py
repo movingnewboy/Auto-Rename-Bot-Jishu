@@ -179,11 +179,10 @@ async def start_processing(client, message: Message):
 
 # Modified auto-rename handler
 @Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
-async def auto_rename_files(client, message):
+async def auto_rename_files(client, message: Message):
     user_id = message.from_user.id
     format_template = await madflixbotz.get_format_template(user_id)
     custom_username = await madflixbotz.get_custom_username(user_id)
-    # thumb_file_id = await madflixbotz.get_thumbnail(user_id)  # Get thumbnail file_id
     
     if not format_template or not custom_username:
         return await message.reply("Please set both username and format template first")
@@ -198,55 +197,79 @@ async def auto_rename_files(client, message):
 
         renaming_operations[file_id] = time.time()
         
-        # original_name = get_file_name(message)
+        # Get original filename from caption
         caption = message.caption
-        original_name = caption.strip().split("\n")[0]
+        original_name = caption.strip().split("\n")[0] if caption else "Unknown"
         cleaned_name = re.sub(r'^@\w+\s*', '', original_name)
         formatted_name = f"[{custom_username}] - {cleaned_name}"
         final_name = format_template.replace("{file_name}", formatted_name)
         
-        download_msg = await message.reply("Downloading file...")
-        file_path = await client.download_media(
-            message,
-            progress=progress_for_pyrogram,
-            progress_args=(original_name, download_msg, time.time())  # Correct order
-        )
-        # file_path = await client.download_media(message, progress=progress_for_pyrogram, 
-        #                                       progress_args=("final_name", download_msg, time.time()))
+        # Create downloads directory
+        download_dir = "downloads"
+        os.makedirs(download_dir, exist_ok=True)
+        file_path = os.path.join(download_dir, final_name)
 
-        # Use thumbnail if available
-        # thumb = thumb_file_id if thumb_file_id else None
-        
+        # Download with progress
+        start_time = time.time()
+        download_msg = await message.reply("Downloading file...")
+        try:
+            file_path = await client.download_media(
+                message,
+                file_name=file_path,  # Save directly to final path
+                progress=progress_for_pyrogram,
+                progress_args=(original_name, download_msg, start_time)
+            )
+            
+            # Check if file_path is valid
+            if not file_path or not os.path.exists(file_path):
+                await message.reply("❌ File download failed")
+                return
+        except Exception as e:
+            await message.reply(f"Download failed: {str(e)}")
+            return
+
         # Rename file
         new_path = os.path.join(os.path.dirname(file_path), final_name)
         os.rename(file_path, new_path)
-        
-        # Upload to user
+
+        # Upload with progress
+        start_time = time.time()
         upload_msg = await download_msg.edit("Uploading file...")
-        sent_message = await client.send_document(
-            message.chat.id,
-            document=new_path,
-            caption=f"{final_name}",
-            progress=progress_for_pyrogram,
-            progress_args=(final_name, upload_msg, time.time())
-        )
-        
-        # Upload to log channel
-        await client.send_document(
-            Config.LOG_DATABASE,
-            document=new_path,
-            caption=f"{final_name}"
-        )
-        
+        try:
+            # Upload to user
+            await client.send_document(
+                message.chat.id,
+                document=new_path,
+                file_name=final_name,
+                progress=progress_for_pyrogram,
+                progress_args=(final_name, upload_msg, start_time)
+            )
+            
+            # Upload to log channel
+            await client.send_document(
+                Config.LOG_DATABASE,
+                document=new_path,
+                file_name=final_name,
+                caption=f"Renamed from: {original_name}"
+            )
+        except Exception as e:
+            await message.reply(f"Upload failed: {str(e)}")
+        finally:
+            # Cleanup after both uploads complete
+            if os.path.exists(new_path):
+                os.remove(new_path)
+            
         await upload_msg.delete()
-        os.remove(new_path)
         del renaming_operations[file_id]
         
     except Exception as e:
         await message.reply(f"Error processing file: {str(e)}")
-        if os.path.exists(new_path):
+        if 'file_path' in locals() and file_path and os.path.exists(file_path):
+            os.remove(file_path)
+        if 'new_path' in locals() and new_path and os.path.exists(new_path):
             os.remove(new_path)
-        del renaming_operations[file_id]
+        if file_id in renaming_operations:
+            del renaming_operations[file_id]
 
 # Helper function
 def get_file_name(message):
