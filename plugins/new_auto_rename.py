@@ -532,6 +532,7 @@ async def auto_rename_files(client, message: Message):
                 file_name=file_path,  # Save directly to final path
                 progress=progress_for_pyrogram,
                 progress_args=(original_name, download_msg, start_time)
+            )
             
             # Check if file_path is valid
             if not file_path or not os.path.exists(file_path):
