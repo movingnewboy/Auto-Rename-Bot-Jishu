@@ -140,7 +140,7 @@ async def start_processing(client, message: Message):
                     progress_msg = await message.reply_text(f"📥 Downloading: {original_name}")
                     file_path = await client.download_media(
                         msg,
-                        file_name=original_name,
+                        file_name=final_name,
                         progress=progress_for_pyrogram,
                         progress_args=(original_name, progress_msg, time.time())  # Correct order
                     )
