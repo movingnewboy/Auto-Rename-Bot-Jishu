@@ -5,7 +5,7 @@ class Config(object):
     # pyro client config
     API_ID    = os.environ.get("API_ID", "8733404")
     API_HASH  = os.environ.get("API_HASH", "f19aed00b0c74abed0359016afc1733f")
-    BOT_TOKEN = os.environ.get("BOT_TOKEN", "5567847114:AAEzFWw-u1e8C4EPjlOEB2wcam-59F3zHts") 
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", "5567847114:AAHbcReTRANBJ5WMydDsoDSOXr916aK408o") 
 
     # database config
     DB_NAME = os.environ.get("DB_NAME","madflixbotz")     
